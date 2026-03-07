@@ -1,205 +1,107 @@
-﻿# MoveWise React Demo
+﻿# MoveWise - NEXUS 2026 Project Repository
 
-A polished, component-based React demo for **MoveWise** (RL-powered MaaS super-app concept), rebuilt from the original HTML prototype into a cleaner, scalable architecture.
-
-This version focuses on:
-- Better UI/UX quality
-- Reusable React components
-- Responsive behavior for mobile and desktop
-- Professional splash intro flow
-- Cleaner maintainability for future expansion
-
----
-
-## 1. Project Overview
-
-MoveWise is a mobility super-app concept that combines:
-- Personalized multimodal route planning
-- QR tap-in/tap-out trip flow
-- Behavioral nudges and gamification
-- Rankings and rewards
-- Insurance + profile + privacy controls
-
-This repo provides a **demo-ready frontend** experience, preserving core interactions while significantly improving structure and presentation.
+MoveWise is a Mobility-as-a-Service (MaaS) concept developed for the NEXUS 2026 competition.
+This repository contains:
+- competition analysis inputs,
+- the final solution formulation,
+- legacy and upgraded frontend demos,
+- branding assets,
+- and supporting local tooling artifacts.
 
 ---
 
-## 2. Key Features
+## 1) Project Purpose
 
-### UI/UX
-- Modern phone-shell demo presentation (desktop-friendly)
-- Fully responsive mode for mobile viewports
-- Cohesive color system, spacing, and typography
-- Clear hierarchy for cards, metrics, CTAs, and navigation
-- Toast feedback for user actions
-- Loading state in Trips route refresh
-
-### Product Flow
-- Bottom navigation with 5 hubs:
-  - Home
-  - Trips
-  - Pay
-  - Rankings
-  - Profile
-- Interactive cards and CTA flows between hubs
-- QR journey timeline simulation
-
-### Splash Intro (Required)
-- Branded splash screen on startup
-- Displays for **exactly 2 seconds**
-- Smooth transition to main app
-- Includes animated progress bar
-
-### Branding
-- Uses your logo file: `public/logo.jpg`
-- Logo integrated into:
-  - Splash screen
-  - Header branding on all major screens
-  - QR center visual marker
+The project proposes an RL-powered MaaS super-app that helps shift car-dependent users toward greener travel behavior through:
+- personalized multimodal route recommendations,
+- QR tap-in/tap-out integrated payment,
+- behavior nudges and gamification,
+- insurance-linked incentives,
+- and practical onboarding for car users (parking/fuel touchpoints).
 
 ---
 
-## 3. Tech Stack
-
-- **React 18**
-- **Vite 5** (fast dev/build tooling)
-- Plain CSS (no heavy UI framework)
-
-Why this stack:
-- Fast startup and iteration
-- Lightweight bundle
-- Easy for hackathon/demo changes
-- Clean component separation without complexity
-
----
-
-## 4. Project Structure
+## 2) Repository Structure
 
 ```text
-movewise-react/
-  index.html
-  package.json
-  vite.config.js
-  public/
-    logo.jpg
-  src/
-    main.jsx
-    App.jsx
-    data/
-      mockData.js
-    styles/
-      app.css
-    components/
-      SplashScreen.jsx
-      PhoneShell.jsx
-      BottomNav.jsx
-      HomeScreen.jsx
-      TripsScreen.jsx
-      PayScreen.jsx
-      RankingsScreen.jsx
-      ProfileScreen.jsx
-      ui/
-        Card.jsx
+nexus/
+  Competition matirial/
+    RL_MaaS_Formulation_v3.tex
+    RL_MaaS_Formulation_v3.pdf
+    TOPIC BOOKLET NEXUS 2026 (2).pdf
+
+  movewise-react/
+    (React/Vite upgraded demo app)
+
+  Demo/
+    index.html
+    (single-file merged HTML demo)
+
+  movewise_app_mockup.html
+  logo.jpg
+
+  nexus_2026_problem_extract.json
+  _pdf_extracted_pages.json
+
+  RL-Mobility-Optimizer/
+  texlive/
+  .env/
 ```
 
-### Component Responsibilities
+### Main folders/files explained
 
-- `App.jsx`
-  - App state container
-  - Splash timing logic (2s)
-  - Active tab routing between hubs
-  - Global toast feedback state
-
-- `PhoneShell.jsx`
-  - Shared device frame/screen shell
-  - Injects screen content + bottom nav
-
-- `BottomNav.jsx`
-  - Primary navigation actions
-  - Active tab highlighting
-
-- `SplashScreen.jsx`
-  - Intro branding and transition animation visuals
-
-- `HomeScreen.jsx`
-  - Core landing hub (service tiles, nudge, suggested trip)
-
-- `TripsScreen.jsx`
-  - Route cards, loading state, carpool panel, parking/fuel assistant
-
-- `PayScreen.jsx`
-  - QR mock, timeline journey states, trip summary metrics
-
-- `RankingsScreen.jsx`
-  - Progress KPIs and leaderboard snapshot
-
-- `ProfileScreen.jsx`
-  - Insurance summary, preferences, privacy/support actions
-
-- `ui/Card.jsx`
-  - Reusable card container primitive used across screens
-
-- `data/mockData.js`
-  - Navigation and mock screen data
+- `Competition matirial/`
+  - Core competition documents and final technical formulation in LaTeX/PDF.
+- `movewise-react/`
+  - Modern React implementation of the app demo (recommended frontend for presentations and future extension).
+- `Demo/`
+  - Lightweight merged HTML/CSS/JS demo version.
+- `movewise_app_mockup.html`
+  - Original visual mockup reference (design baseline).
+- `logo.jpg`
+  - Brand logo, also used by the React splash and app headers.
+- `nexus_2026_problem_extract.json`, `_pdf_extracted_pages.json`
+  - Structured extracted/problem context data.
 
 ---
 
-## 5. Design System Notes
+## 3) Design and Product Scope
 
-### Colors
-- Primary blue: `#19547B`
-- Sustainability green: `#22783C`
-- Payment accent orange: `#DC7814`
-- Neutral background/surface tokens in `app.css`
+### Current UX direction
 
-### Typography
-- Inter system stack for clarity and consistency
+The latest direction keeps MoveWise Home as the visual center and merges feature areas into practical hubs:
+- Home
+- Trips
+- Pay
+- Rankings
+- Profile
 
-### Patterns
-- Rounded cards
-- Subtle shadows
-- Pill chips for metadata
-- Metric triplets for key KPIs
-- Primary/secondary CTA button pair
+### Included demo capabilities
 
-### Motion
-- Splash logo float
-- Splash loader progress (2s)
-- Hover/press response on buttons and tiles
-- Toast fade transitions
+- Home dashboard with recommendation card and service tiles
+- Route/trips panel with route options, carpool, parking/fuel snapshot
+- QR payment journey timeline
+- Rewards and leaderboard summary
+- Insurance, profile preferences, privacy and support actions
+- App feedback via toast messages
 
 ---
 
-## 6. Accessibility + UX Considerations
+## 4) Recommended Demo to Run
 
-- Semantic buttons used for all actions
-- Keyboard-focusable controls
-- ARIA labels on icon-only controls
-- Status feedback via toast (`aria-live`)
-- Clear visual contrast for CTA states
+Use `movewise-react/` for repo/demo quality.
+Use `Demo/index.html` for a static fallback.
 
 ---
 
-## 7. Scripts
-
-From `package.json`:
-
-- `npm run dev`
-  - Start local development server
-- `npm run build`
-  - Build production bundle
-- `npm run preview`
-  - Preview built app locally
-
----
-
-## 8. How to Run
+## 5) Running the React App (`movewise-react`)
 
 ## Prerequisites
-- Node.js 18+ (recommended Node 20 LTS)
-- npm (included with Node.js)
 
-## Install and start
+- Node.js 18+ (Node 20 LTS recommended)
+- npm (bundled with Node.js)
+
+## Install and run
 
 ```bash
 cd D:\hachaton\nexus\movewise-react
@@ -207,9 +109,9 @@ npm install
 npm run dev
 ```
 
-Then open the URL shown in terminal (usually `http://localhost:5173`).
+Open the local URL printed by Vite (typically `http://localhost:5173`).
 
-## Production build
+## Build and preview production
 
 ```bash
 cd D:\hachaton\nexus\movewise-react
@@ -219,65 +121,81 @@ npm run preview
 
 ---
 
-## 9. Troubleshooting
+## 6) Running the Static HTML Demo
 
-### Error: `npm is not recognized`
-Cause:
-- Node.js/npm is not installed or not on PATH.
+Open directly in browser:
+- `D:\hachaton\nexus\Demo\index.html`
 
-Fix:
-1. Install Node.js LTS from: https://nodejs.org/
+No build step required.
+
+---
+
+## 7) React App Architecture (`movewise-react`)
+
+High-level structure:
+
+- `src/App.jsx`
+  - app state container, splash timing, active screen routing, feedback toast
+- `src/components/`
+  - screen-level components (Home/Trips/Pay/Rankings/Profile)
+  - `SplashScreen.jsx`
+  - `PhoneShell.jsx`
+  - `BottomNav.jsx`
+- `src/components/ui/Card.jsx`
+  - reusable card primitive
+- `src/data/mockData.js`
+  - mock nav and screen data
+- `src/styles/app.css`
+  - global tokens, responsive rules, component styles
+- `public/logo.jpg`
+  - logo asset for splash/header/QR marker
+
+---
+
+## 8) Intro/Splash Behavior
+
+In the React app:
+- branded splash screen appears on startup,
+- stays for exactly 2 seconds,
+- transitions automatically to the main app.
+
+---
+
+## 9) Data and Documentation Inputs
+
+Core source inputs for the competition solution:
+- `Competition matirial/RL_MaaS_Formulation_v3.tex`
+- `Competition matirial/TOPIC BOOKLET NEXUS 2026 (2).pdf`
+- `nexus_2026_problem_extract.json`
+- `_pdf_extracted_pages.json`
+
+---
+
+## 10) Known Environment Notes
+
+If terminal shows `npm is not recognized`:
+1. Install Node.js from https://nodejs.org/
 2. Reopen terminal
 3. Verify:
    ```bash
    node -v
    npm -v
    ```
-4. Run install/start commands again.
-
-### Port already in use
-Use:
-```bash
-npm run dev -- --port 5174
-```
-
-### Logo not showing
-Check file exists:
-- `D:\hachaton\nexus\movewise-react\public\logo.jpg`
+4. Retry install/run commands.
 
 ---
 
-## 10. Current Scope vs Future Scope
-
-Current scope:
-- High-quality interactive frontend demo
-- Mock data and client-side interactions
-
-Not yet included:
-- Backend APIs
-- Authentication
-- Real payment/QR scanning
-- Persistent user state
-- Analytics pipeline
-
----
-
-## 11. Suggested Next Enhancements
+## 11) Suggested Next Steps
 
 1. Add React Router for URL-based navigation.
-2. Add Framer Motion for richer page transitions.
-3. Add API integration layer (`services/`) + async data hooks.
-4. Add form validation and user preference editing UI.
-5. Add i18n support (EN/IT).
-6. Add dark mode token set.
-7. Add tests (Vitest + React Testing Library).
+2. Add API abstraction layer and replace mock data.
+3. Add charts for impact/rewards analytics.
+4. Add test coverage (Vitest + React Testing Library).
+5. Add CI workflow for build/lint checks.
 
 ---
 
-## 12. Authoring Notes
+## 12) License / Usage
 
-This project was rebuilt from the original plain HTML prototype in `D:\hachaton\nexus\Demo\index.html` and aligned to your updated design direction:
-- Keep MoveWise as center visual identity
-- Merge unnecessary screens
-- Make all key menu/buttons interactive
-- Maintain demo speed and clarity for presentations
+No license file is currently included in this repository.
+If this repo is being published publicly, add a license (`MIT`, `Apache-2.0`, etc.) before release.
