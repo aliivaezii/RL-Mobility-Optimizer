@@ -81,7 +81,7 @@ export default function ConsentPrompt({ onAccept }) {
     <div className="consent-overlay">
       <div className="consent-card">
         <div className="consent-hero">
-          <img src="/assets/logo.jpg" alt="MoveWise" className="consent-logo-img" />
+          <img src={`${import.meta.env.BASE_URL}assets/logo.jpg`} alt="MoveWise" className="consent-logo-img" />
           <h2>Welcome to MoveWise</h2>
           <p className="consent-sub">Your AI-powered sustainable mobility companion</p>
         </div>

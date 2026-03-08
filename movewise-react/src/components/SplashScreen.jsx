@@ -10,7 +10,7 @@ export default function SplashScreen() {
         </Suspense>
       </div>
       <div className="splash-content">
-        <img src="logo.jpg" alt="MoveWise" className="splash-logo" />
+        <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="MoveWise" className="splash-logo" />
         <h1 className="splash-title">MoveWise</h1>
         <p className="splash-subtitle">RL-Powered MaaS Super-App</p>
         <div className="splash-loader">
