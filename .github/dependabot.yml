@@ -1,0 +1,50 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /rl_engine
+    schedule:
+      interval: weekly
+    reviewers:
+      - aliivaezii
+      - Sajjad-Shahali
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: "deps(python):"
+
+  - package-ecosystem: npm
+    directory: /movewise-react
+    schedule:
+      interval: weekly
+    reviewers:
+      - aliivaezii
+      - Sajjad-Shahali
+    labels:
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: "deps(npm):"
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+    reviewers:
+      - aliivaezii
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "deps(docker):"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "deps(actions):"
