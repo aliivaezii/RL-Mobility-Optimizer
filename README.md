@@ -1,7 +1,15 @@
 ﻿# MoveWise — AI-Powered Sustainable Mobility Platform
 
+[![CI](https://github.com/Sajjad-Shahali/RL-Mobility-Optimizer/actions/workflows/ci.yml/badge.svg)](https://github.com/Sajjad-Shahali/RL-Mobility-Optimizer/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![React 18](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ed.svg)](https://docs.docker.com/compose/)
+
 > **NEXUS 2026 Hackathon** | Politecnico di Torino  
 > React + Vite + Three.js + Leaflet/OpenStreetMap
+
+**Authors:** Ali Vaezi, Sajjad Shahali, Kiana Salimi
 
 ---
 
@@ -363,4 +371,4 @@ MoveWise doesn't just plan routes — it **transforms mobility behavior** throug
 ---
 
 > *Built for NEXUS 2026 Hackathon — Politecnico di Torino*  
-> *Team project — March 2026*
+> *Ali Vaezi, Sajjad Shahali, Kiana Salimi — March 2026*

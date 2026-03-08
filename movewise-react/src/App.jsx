@@ -71,20 +71,20 @@ export default function App() {
     }
   }, [activeTab, insuranceInitTab]);
 
-  // Consent prompt shown first, before anything else
-  if (!hasConsent) {
-    return (
-      <PhoneShell activeTab={activeTab} onTabChange={handleNavigate} showSplash={true}>
-        <ConsentPrompt onAccept={handleConsent} />
-      </PhoneShell>
-    );
-  }
-
-  // Splash screen
+  // Splash screen shown first — branded app startup
   if (showSplash) {
     return (
       <PhoneShell activeTab={activeTab} onTabChange={handleNavigate} showSplash={true}>
         <SplashScreen />
+      </PhoneShell>
+    );
+  }
+
+  // Consent prompt shown after splash
+  if (!hasConsent) {
+    return (
+      <PhoneShell activeTab={activeTab} onTabChange={handleNavigate} showSplash={true}>
+        <ConsentPrompt onAccept={handleConsent} />
       </PhoneShell>
     );
   }
