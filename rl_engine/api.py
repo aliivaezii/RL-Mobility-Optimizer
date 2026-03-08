@@ -2,16 +2,25 @@
 MoveWise RL Engine — FastAPI Backend
 ======================================
 REST API for integrating the RL engine with Sajjad's React frontend.
-Replaces mockData.js hardcoded values with live RL decisions.
+Replaces the hardcoded mockData.js values with live RL-powered decisions.
+
+Architecture (v3 §3 — MaaS Super-App Service Portfolio):
+  The API serves as the "AI Engine" (v3 §3.2) that powers:
+  - Multi-modal route ranking with personalized GC (v3 §5)
+  - Nudge selection using the dedicated Q-network (v3 Eq. 5)
+  - User behavioral profile tracking (v3 §6 — HUR model)
+  - Real-time trip recording with habit/phase updates
 
 Endpoints:
-  GET  /api/health              → Health check
-  GET  /api/routes/{trip_type}  → Ranked routes for a trip type
-  GET  /api/nudge/select        → Select optimal nudge
-  GET  /api/user/profile        → User's current behavioral profile
+  GET  /api/health              → Health check + model status
+  GET  /api/routes/{trip_type}  → Ranked routes for a trip type (replaces mockData.routeOptions)
+  GET  /api/nudge/select        → Select optimal nudge (replaces static nudge rotation)
+  GET  /api/user/profile        → User behavioral profile (powers ProfileScreen HUR display)
   POST /api/user/trip           → Record a trip and get updated state
-  GET  /api/simulation/run      → Run a full training simulation
+  GET  /api/simulation/run      → Run a full training simulation (demo mode)
   GET  /api/simulation/status   → Get current simulation status
+
+CORS enabled for React frontend integration (http://localhost:5173).
 """
 
 import os
@@ -117,7 +126,7 @@ def get_routes(
         GIUSEPPE,
         current_phase=phase,
         weather=weather,
-        peak=peak,
+        time_of_day="morning_peak" if peak else "afternoon",
     )
     
     # Convert to format matching Sajjad's frontend
@@ -133,9 +142,9 @@ def get_routes(
             "cost": round(r["cost_eur"], 2),
             "co2": round(r["co2_kg"], 2),
             "gcScore": round(r["gc_total"], 2),
-            "comfort": round(profile.comfort, 1),
+            "comfort": round(profile.comfort_score, 1),
             "reliability": round(profile.reliability, 2),
-            "transfers": profile.transfers,
+            "transfers": profile.num_transfers,
             "isGreen": mode_key not in ("car_driver", "car_passenger"),
             "rank": i + 1,
             "recommended": i == 0,
@@ -212,8 +221,8 @@ def get_user_profile():
         "trip_distance_km": user.trip_distance_km,
         "commute_days": user.commute_days,
         "phase": env.phase if env else 0,
-        "green_trips_total": env.green_trips_total if env else 0,
-        "car_trips_total": env.car_trips_total if env else 0,
+        "green_trips_total": env.green_trips if env else 0,
+        "car_trips_total": env.car_trips if env else 0,
         "green_points": env.green_points if env else 0,
         "session_co2_saved": round(STATE.session_co2_saved, 2),
         "budget": {

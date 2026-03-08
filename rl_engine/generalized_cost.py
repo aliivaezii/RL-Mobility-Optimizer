@@ -1,12 +1,23 @@
 """
 MoveWise RL Engine — Generalized Cost Framework
 =================================================
-Implements the full decomposed GC from RL_MaaS_Formulation_v3.tex:
-  - Context-dependent Value of Time (VOT)
-  - Additive costs: time, monetary, comfort, reliability
-  - Non-additive costs: transfers, crowding, waiting
-  - Prospect Theory adjustment (loss aversion μ = 2.25)
-  - Productivity scoring (Giuseppe studies as passenger)
+Implements the full decomposed Generalized Cost from v3 §5 (Eq. 1):
+
+  GC(mode) = C_time + C_monetary + P_transfer + P_reliability
+             + P_comfort + P_walking + C_environment
+             + P_weather + P_peak
+
+With adjustments:
+  - Context-dependent VOT (v3 §5): productivity-adjusted for each mode
+    Car passenger: 3.7 EUR/h | Car driver: 10.0 EUR/h | Train: 4.4 EUR/h
+  - Prospect Theory (Kahneman & Tversky, 1979): μ = 2.25 loss aversion
+    Losses (switching cost vs car) feel 2.25× worse than equivalent gains
+  - Transfer penalty: 3.5 EUR/transfer (Wardman, 2004)
+  - Environmental cost: γ_eco × CO₂ × social cost of carbon
+
+References:
+  Wardman, M. (2004). Public Transport Values of Time. Transport Policy.
+  Kahneman, D. & Tversky, A. (1979). Prospect Theory. Econometrica.
 """
 
 import numpy as np
