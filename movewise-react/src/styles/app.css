@@ -99,7 +99,7 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-top: 34px;
+  padding-top: 0px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -120,7 +120,7 @@ body {
 .header-gradient {
   background: var(--gradient-main);
   color: #fff;
-  padding: 16px 18px 14px;
+  padding: 50px 18px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -128,13 +128,13 @@ body {
   z-index: 2;
 }
 .header-gradient.compact {
-  padding: 14px 18px 18px;
+  padding: 50px 18px 18px;
 }
 
 .header-pay {
   background: var(--gradient-orange);
   color: #fff;
-  padding: 16px 18px 20px;
+  padding: 50px 18px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -184,7 +184,7 @@ body {
   margin-top: -2px;
   background: var(--gradient-main);
   color: #fff;
-  padding: 0 18px 16px;
+  padding: 15px 18px 16px;
 }
 .greeting-block h2 {
   font-size: 19px;

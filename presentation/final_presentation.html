@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoveWise — Final Presentation | NEXUS 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ffffff;--bg2:#f4f6f9;--bg3:#e2e8f0;--bg4:#cbd5e1;
+  --cyan:#0891b2;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;--blue:#2563eb;
+  --text:#1e293b;--text2:#475569;--text3:#64748b;
+  --glass:rgba(255,255,255,.85);--glass-border:rgba(148,163,184,.25);
+  --radius:14px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+/* ─── Export Button ─── */
+#exportBtn{
+  position:fixed;top:18px;right:24px;z-index:9999;
+  padding:10px 22px;border:1px solid rgba(8,145,178,.35);border-radius:10px;
+  background:linear-gradient(135deg,rgba(8,145,178,.1),rgba(5,150,105,.08));
+  color:var(--cyan);font-size:14px;font-weight:600;font-family:'Inter',sans-serif;
+  cursor:pointer;backdrop-filter:blur(12px);transition:all .25s;display:flex;align-items:center;gap:8px;
+}
+#exportBtn:hover{background:linear-gradient(135deg,rgba(8,145,178,.2),rgba(5,150,105,.15));transform:translateY(-1px);box-shadow:0 6px 24px rgba(8,145,178,.15)}
+#exportBtn:active{transform:scale(.97)}
+#exportBtn.exporting{opacity:.7;pointer-events:none}
+#exportBtn svg{width:16px;height:16px}
+
+/* ─── Progress bar ─── */
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--green));z-index:100;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ─── Nav dots ─── */
+#nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:100}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--bg3);cursor:pointer;transition:all .35s}
+.dot.active{background:var(--cyan);box-shadow:0 0 10px rgba(8,145,178,.35);transform:scale(1.35)}
+.dot:hover{background:var(--text2)}
+
+#slideLabel{position:fixed;bottom:26px;right:28px;font-size:11px;color:var(--text3);z-index:100;font-family:'JetBrains Mono',monospace}
+
+/* ─── Slide container ─── */
+#slides{position:relative;width:100%;height:100%;z-index:1}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;padding:32px 56px;transition:opacity .5s ease}
+.slide.active{opacity:1;pointer-events:auto}
+
+/* ─── Glass ─── */
+.glass{background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);backdrop-filter:blur(18px);padding:22px}
+
+/* ─── Typography ─── */
+h1{font-size:clamp(42px,5.5vw,74px);font-weight:800;line-height:1.08;letter-spacing:-.025em}
+h2{font-size:clamp(22px,2.6vw,34px);font-weight:700;letter-spacing:-.01em}
+h3{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--cyan)}
+.gradient{background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mono{font-family:'JetBrains Mono',monospace}
+.sm{font-size:14px;line-height:1.55;color:var(--text2)}
+.xs{font-size:12px;color:var(--text3)}
+
+/* ─── Tags ─── */
+.tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.tag-cyan{background:rgba(8,145,178,.08);color:var(--cyan);border:1px solid rgba(8,145,178,.25)}
+.tag-green{background:rgba(5,150,105,.08);color:var(--green);border:1px solid rgba(5,150,105,.25)}
+.tag-orange{background:rgba(217,119,6,.08);color:var(--orange);border:1px solid rgba(217,119,6,.25)}
+.tag-red{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.25)}
+.tag-purple{background:rgba(124,58,237,.08);color:var(--purple);border:1px solid rgba(124,58,237,.25)}
+
+/* ─── Stat ─── */
+.stat-val{font-size:clamp(30px,3.2vw,48px);font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+
+/* ─── Common layout helpers ─── */
+.cols{display:flex;gap:24px;width:100%;max-width:1240px}
+.col{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--bg2);border:1px solid var(--glass-border);border-radius:10px;padding:14px 16px}
+
+/* ===================== SLIDE 1 — TITLE ===================== */
+#s1{flex-direction:column;gap:18px;text-align:center}
+.nexus-badge{display:inline-block;padding:6px 20px;border-radius:20px;border:1px solid var(--glass-border);background:rgba(8,145,178,.06);font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--text2);backdrop-filter:blur(6px)}
+#s1 .subtitle{font-size:clamp(13px,1.4vw,18px);color:var(--text2);max-width:680px;margin:0 auto;line-height:1.55}
+.service-row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.svc{width:110px;padding:16px 10px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text);border:1px solid var(--glass-border);background:var(--glass);transition:transform .3s,box-shadow .3s}
+.svc:hover{transform:translateY(-4px);box-shadow:0 10px 36px rgba(0,0,0,.08)}
+.svc svg{width:32px;height:32px}
+.team-info{font-size:14px;color:var(--text3);margin-top:4px}
+
+/* ===================== SLIDE 2 — MOCKUP ===================== */
+#s2{gap:36px}
+#s2 .features{flex:1;max-width:360px;display:flex;flex-direction:column;gap:14px}
+.phone-frame{width:290px;min-width:290px;height:580px;border-radius:38px;border:4px solid var(--bg4);background:#1a1f2e;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.1),0 20px 60px rgba(0,0,0,.12)}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100px;height:24px;background:#1a1f2e;border-radius:0 0 14px 14px;z-index:2}
+.phone-screen{position:absolute;inset:0;display:flex;flex-direction:column}
+.screen-mock{flex:1;display:flex;flex-direction:column;padding:36px 14px 14px;gap:8px;overflow:hidden;background:#1a1f2e;color:#e2e8f0}
+.screen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.screen-header h4{font-size:15px;font-weight:700}
+.mock-card{background:#2a3450;border-radius:10px;padding:10px 12px;font-size:11px;color:#c8d3e0;display:flex;align-items:center;gap:10px}
+.mock-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.mock-bottom{display:flex;justify-content:space-around;padding:10px 0;margin-top:auto;border-top:1px solid rgba(148,163,184,.15)}
+.mock-tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:8px;color:#64748b}
+.mock-tab.active{color:#00d2eb}
+.mock-tab svg{width:18px;height:18px}
+.feature-item{display:flex;align-items:flex-start;gap:10px}
+.fbullet{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.ftext{font-size:13px;color:var(--text2);line-height:1.5}
+.ftext strong{color:var(--text);font-weight:600}
+.tech-stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+
+/* ===================== SLIDE 3 — RESEARCH ===================== */
+#s3{align-items:flex-start;padding-top:22px;padding-bottom:54px;gap:18px}
+.chart-box{background:var(--bg2);border-radius:10px;padding:12px;border:1px solid var(--glass-border);position:relative}
+.chart-box canvas{max-height:140px}
+.profile-card{padding:12px;border-radius:10px;background:var(--bg2);border:1px solid var(--glass-border)}
+.profile-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);padding:4px 0}
+.profile-row .icon{font-size:14px;width:20px;text-align:center}
+.corridor-map{position:relative;padding:14px 6px}
+.corridor-line{height:5px;background:linear-gradient(90deg,var(--red),var(--orange),var(--cyan),var(--green));border-radius:3px;position:relative;margin:22px 6px}
+.corridor-stop{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;border:2px solid var(--bg);z-index:2}
+.corridor-label{position:absolute;transform:translateX(-50%);font-size:10px;font-weight:600;white-space:nowrap}
+.corridor-label.above{bottom:calc(100% + 10px)}
+.corridor-label.below{top:calc(100% + 10px)}
+.bench-table{width:100%;font-size:12px;border-collapse:separate;border-spacing:0 3px}
+.bench-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);padding:4px 5px;text-align:center}
+.bench-table th:first-child{text-align:left}
+.bench-table td{padding:5px;text-align:center;background:var(--bg2);font-size:12px}
+.bench-table td:first-child{text-align:left}
+.bench-table tr td:first-child{border-radius:3px 0 0 3px}
+.bench-table tr td:last-child{border-radius:0 3px 3px 0}
+.check{color:var(--green)}
+.cross{color:var(--text3);opacity:.4}
+.mw-col{background:rgba(5,150,105,.06)!important;font-weight:600}
+.ctx-card{padding:10px 12px;border-radius:7px;border-left:3px solid;font-size:12px;color:var(--text2);line-height:1.5;background:var(--bg2)}
+.ctx-card strong{color:var(--text);font-weight:600}
+.counter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.counter-card{background:var(--bg2);border-radius:8px;padding:12px 10px;text-align:center;border:1px solid var(--glass-border)}
+.counter-val{font-size:26px;font-weight:800;line-height:1}
+.counter-lbl{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ===================== SLIDE 4 — PROJECT ===================== */
+#s4{align-items:flex-start;padding-top:22px;padding-bottom:54px;gap:18px}
+.formula-box{background:var(--bg2);border:1px solid var(--glass-border);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--text2);overflow-x:auto;white-space:nowrap}
+.formula-box .hl{color:var(--cyan);font-weight:600}
+.formula-box .hg{color:var(--green);font-weight:600}
+.formula-box .ho{color:var(--orange);font-weight:600}
+.formula-box .hp{color:var(--purple);font-weight:600}
+.layer-card{border-radius:8px;padding:10px 12px;border-left:3px solid;background:var(--bg2);margin-bottom:6px}
+.layer-card h4{font-size:12px;font-weight:700;margin-bottom:3px}
+.layer-card p{font-size:11px;color:var(--text2);line-height:1.5}
+.phase-list{display:flex;flex-direction:column;gap:6px}
+.phase{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg2);border:1px solid var(--glass-border)}
+.phase-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.phase-body{font-size:12px;color:var(--text2);line-height:1.45}
+.phase-body strong{color:var(--text)}
+.arch-block{display:flex;flex-direction:column;align-items:center;gap:4px}
+.arch-node{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:10px;font-weight:700;border:1px solid;width:100%;justify-content:center}
+.arch-arrow{font-size:14px;color:var(--text3)}
+.sustain-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.sustain-card{padding:8px;border-radius:8px;text-align:center;border:1px solid var(--glass-border);background:var(--bg2)}
+.sustain-card .sv{font-size:15px;font-weight:800;line-height:1}
+.sustain-card .sl{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* ===================== SLIDE 5 — CONCLUSION ===================== */
+#s5{align-items:flex-start;padding-top:22px;padding-bottom:54px;gap:18px}
+.metric-card{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--glass-border)}
+.metric-before{font-size:20px;font-weight:300;color:var(--text3);text-decoration:line-through;text-decoration-color:var(--red)}
+.metric-arrow{font-size:18px;color:var(--text3)}
+.metric-after{font-size:30px;font-weight:800}
+.metric-label{font-size:11px;color:var(--text3);margin-left:auto;text-transform:uppercase;letter-spacing:.05em;text-align:right}
+.impact-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.impact-card{padding:12px;border-radius:8px;text-align:center;border:1px solid var(--glass-border);background:var(--bg2)}
+.impact-val{font-size:24px;font-weight:800;line-height:1}
+.impact-lbl{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase}
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--bg3)}
+.tl-item{position:relative;padding:6px 0 6px 16px;font-size:10px}
+.tl-item::before{content:'';position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid;background:var(--bg)}
+.tl-item h4{font-size:13px;font-weight:700;margin-bottom:2px}
+.tl-item p{color:var(--text2);font-size:11px;line-height:1.45}
+.pitch-box{text-align:center;padding:18px 20px;border-radius:12px;border:1px solid rgba(8,145,178,.2);background:linear-gradient(135deg,rgba(8,145,178,.04),rgba(5,150,105,.04))}
+.pitch-box .big{font-size:clamp(13px,1.4vw,18px);font-weight:400;color:var(--text2);line-height:1.6;font-style:italic}
+.value-row{display:flex;gap:8px;flex-wrap:wrap}
+.value-card{flex:1;min-width:100px;padding:10px;border-radius:8px;text-align:center;background:var(--bg2);border:1px solid var(--glass-border)}
+.value-card .vi{font-size:22px;margin-bottom:4px}
+.value-card .vt{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.value-card .vd{font-size:10px;color:var(--text3);line-height:1.4}
+
+/* ─── Animated bg ─── */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-grid::before{content:'';position:absolute;inset:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(8,145,178,.03) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(5,150,105,.02) 0%,transparent 60%)}
+
+/* ─── Scrollbar ─── */
+.scroll-col{max-height:calc(100vh - 80px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent}
+.scroll-col::-webkit-scrollbar{width:4px}
+.scroll-col::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* ─── Print / Export capture ─── */
+.slide-capture{position:absolute;left:-9999px;top:0;width:1920px;height:1080px;overflow:hidden}
+
+@media(max-width:900px){
+  .slide{padding:18px 20px}
+  .cols{flex-direction:column;gap:14px}
+  .phone-frame{width:220px;min-width:220px;height:440px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<!-- ─── Export to PDF Button ─── -->
+<button id="exportBtn" onclick="exportPDF()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+  Export PDF
+</button>
+
+<!-- ─── Progress & Nav ─── -->
+<div id="progress" style="width:20%"></div>
+<div id="nav"></div>
+<div id="slideLabel">01 / 05</div>
+
+<!-- ═══════════════════════ SLIDES ═══════════════════════ -->
+<div id="slides">
+
+<!-- ━━━━━━━━ SLIDE 1 — TITLE ━━━━━━━━ -->
+<div class="slide active" id="s1">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+    <div class="nexus-badge">NEXUS 2026 · A HUB FOR INNOVATION</div>
+    <h1><span class="gradient">MoveWise</span></h1>
+    <p style="font-size:clamp(17px,1.8vw,26px);color:var(--text2);max-width:740px;line-height:1.5">
+      An RL‑Powered MaaS Super‑App for Behaviorally‑Aware Sustainable Mobility
+    </p>
+    <p class="sm" style="max-width:640px;margin-top:-4px">
+      Integrating QR Tap‑In/Tap‑Out Data Collection, Insurance, Payment, Carpooling &amp; Nudge‑Based Behavior Change — Solving Giuseppe's Mobility Problem
+    </p>
+
+    <!-- Service icons row -->
+    <div class="service-row">
+      <div class="svc" style="border-color:rgba(0,210,235,.2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <span>Route AI</span>
+      </div>
+      <div class="svc" style="border-color:rgba(52,211,153,.2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span>Payment</span>
+      </div>
+      <div class="svc" style="border-color:rgba(167,139,250,.2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.6"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2C20 17.5 12 22 12 22z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Insurance</span>
+      </div>
+      <div class="svc" style="border-color:rgba(245,158,11,.2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Carpool</span>
+      </div>
+      <div class="svc" style="border-color:rgba(239,68,68,.2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span>Nudges</span>
+      </div>
+    </div>
+
+    <!-- Team member photos -->
+    <div style="display:flex;gap:32px;margin-top:10px;align-items:center;justify-content:center">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid #0891b2;box-shadow:0 4px 15px rgba(8,145,178,.25)">
+          <img src="screenshot/sajjadshahali.jpg" alt="Sajjad Shahali" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Sajjad Shahali</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid #059669;box-shadow:0 4px 15px rgba(5,150,105,.25)">
+          <img src="screenshot/kianasalimi.jpg" alt="Kiana Salimi" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Kiana Salimi</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid #7c3aed;box-shadow:0 4px 15px rgba(124,58,237,.25)">
+          <img src="screenshot/alivaezi.jpg" alt="Ali Vaezi" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Ali Vaezi</span>
+      </div>
+    </div>
+
+    <div class="team-info" style="margin-top:6px">
+      <span style="color:var(--text2);font-weight:600">Team MoveWise</span>&nbsp;&nbsp;·&nbsp;&nbsp;BEST Politecnico di Torino&nbsp;&nbsp;·&nbsp;&nbsp;March 7–8, 2026
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━ SLIDE 2 — PHOTO / MOCKUP ━━━━━━━━ -->
+<div class="slide" id="s2">
+  <div class="features" style="margin-right:10px">
+    <h3>App Experience</h3>
+    <h2>MoveWise Super‑App</h2>
+    <p class="sm">A one‑stop mobility ecosystem — route planning, integrated QR payment, insurance, carpooling, gamification, and AI‑powered nudges — all in one interface.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+      <div class="feature-item"><div class="fbullet" style="background:var(--cyan)"></div><div class="ftext"><strong>Smart Route AI:</strong> RL‑personalized intermodal suggestions that learn user preferences over time</div></div>
+      <div class="feature-item"><div class="fbullet" style="background:var(--green)"></div><div class="ftext"><strong>QR Tap‑In/Out:</strong> Rejsekort‑inspired contactless payment across all transport modes</div></div>
+      <div class="feature-item"><div class="fbullet" style="background:var(--purple)"></div><div class="ftext"><strong>Insurance Hub:</strong> Competitive travel &amp; car insurance — the Trojan Horse for car users</div></div>
+      <div class="feature-item"><div class="fbullet" style="background:var(--orange)"></div><div class="ftext"><strong>Gamification:</strong> Green points, leaderboards, streaks &amp; badges drive behavior change</div></div>
+      <div class="feature-item"><div class="fbullet" style="background:var(--red)"></div><div class="ftext"><strong>Carbon Tracker:</strong> Real‑time CO₂ impact visualization creates awareness</div></div>
+    </div>
+
+    <div style="margin-top:8px">
+      <h3 style="font-size:12px;margin-bottom:6px">Tech Stack</h3>
+      <div class="tech-stack">
+        <span class="tag tag-cyan">React</span>
+        <span class="tag tag-green">Python / FastAPI</span>
+        <span class="tag tag-purple">Deep Q‑Learning</span>
+        <span class="tag tag-orange">Prospect Theory</span>
+        <span class="tag tag-red">Nudge AI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="screen-mock">
+        <div class="screen-header">
+          <div>
+            <div style="font-size:10px;color:#94a3b8">Good morning</div>
+            <h4 style="color:#e2e8f0">Giuseppe 👋</h4>
+          </div>
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00d2eb,#34d399);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff">G</div>
+        </div>
+
+        <!-- Carbon card -->
+        <div style="background:linear-gradient(135deg,rgba(0,210,235,.12),rgba(52,211,153,.08));border-radius:12px;padding:12px;border:1px solid rgba(0,210,235,.15)">
+          <div style="font-size:9px;color:#00d2eb;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Your Impact This Month</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+            <span style="font-size:26px;font-weight:800;color:#34d399">18.4</span>
+            <span style="font-size:11px;color:#94a3b8">kg CO₂ saved</span>
+          </div>
+          <div style="height:4px;border-radius:2px;background:#2a3450;margin-top:6px"><div style="height:100%;width:73%;border-radius:2px;background:linear-gradient(90deg,#00d2eb,#34d399)"></div></div>
+          <div style="font-size:8px;color:#64748b;margin-top:3px">73% of monthly goal · 🔥 5‑day streak</div>
+        </div>
+
+        <!-- Quick actions -->
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;background:#2a3450;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px">🚆</div>
+            <div style="font-size:8px;color:#94a3b8;margin-top:2px">Plan Trip</div>
+          </div>
+          <div style="flex:1;background:#2a3450;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px">💳</div>
+            <div style="font-size:8px;color:#94a3b8;margin-top:2px">QR Pay</div>
+          </div>
+          <div style="flex:1;background:#2a3450;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px">🛡️</div>
+            <div style="font-size:8px;color:#94a3b8;margin-top:2px">Insurance</div>
+          </div>
+          <div style="flex:1;background:#2a3450;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px">🏆</div>
+            <div style="font-size:8px;color:#94a3b8;margin-top:2px">Rankings</div>
+          </div>
+        </div>
+
+        <!-- Route suggestion -->
+        <div class="mock-card">
+          <div class="mock-icon" style="background:rgba(52,211,153,.15);color:#34d399">🚄</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0">Recommended: Train + Walk</div>
+            <div style="font-size:9px;color:#64748b;margin-top:1px">30 min · €2.50 · −75% CO₂</div>
+          </div>
+          <span class="tag tag-green" style="font-size:7px">BEST FOR YOU</span>
+        </div>
+
+        <div class="mock-card">
+          <div class="mock-icon" style="background:rgba(0,210,235,.15);color:#00d2eb">🛴</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0">E‑Scooter → Train → Walk</div>
+            <div style="font-size:9px;color:#64748b;margin-top:1px">28 min · €3.20 · −80% CO₂</div>
+          </div>
+        </div>
+
+        <div class="mock-card">
+          <div class="mock-icon" style="background:rgba(167,139,250,.15);color:#a78bfa">🚗</div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:600;color:#e2e8f0">Carpool (3 riders)</div>
+            <div style="font-size:9px;color:#64748b;margin-top:1px">25 min · €1.80 · −50% CO₂</div>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="mock-bottom">
+          <div class="mock-tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</div>
+          <div class="mock-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Trips</div>
+          <div class="mock-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pay</div>
+          <div class="mock-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Profile</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features" style="margin-left:10px">
+    <h3>Architecture</h3>
+    <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
+      <div style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(8,145,178,.25);color:var(--cyan);background:rgba(8,145,178,.06);width:100%;text-align:center">📱 React UI — MoveWise App</div>
+      <div style="font-size:14px;color:var(--text3)">↕</div>
+      <div style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(5,150,105,.25);color:var(--green);background:rgba(5,150,105,.06);width:100%;text-align:center">⚡ FastAPI Backend</div>
+      <div style="font-size:14px;color:var(--text3)">↕</div>
+      <div style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(124,58,237,.25);color:var(--purple);background:rgba(124,58,237,.06);width:100%;text-align:center">🧠 Deep Q‑Learning RL Engine</div>
+      <div style="font-size:14px;color:var(--text3)">↕</div>
+      <div style="padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(217,119,6,.25);color:var(--orange);background:rgba(217,119,6,.06);width:100%;text-align:center">📊 QR Data + Behavioral Model</div>
+    </div>
+
+    <h3 style="margin-top:12px">How It Works</h3>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(8,145,178,.1);color:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</span>
+        User scans QR at trip start (tap‑in)
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(5,150,105,.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</span>
+        RL agent observes mode, time, cost data
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(124,58,237,.1);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</span>
+        Personalized route + nudge recommended
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(217,119,6,.1);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">4</span>
+        Gamification rewards sustainable choices
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)">
+        <span style="width:24px;height:24px;border-radius:50%;background:rgba(220,38,38,.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">5</span>
+        Agent improves via continuous learning
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━ SLIDE 3 — RESEARCH ━━━━━━━━ -->
+<div class="slide" id="s3">
+  <div class="cols" style="align-items:flex-start">
+    <!-- Column 1: Problem Analysis -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--red);padding-bottom:4px;color:var(--red)">Problem Analysis</h3>
+
+      <div class="profile-card">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">👤 Giuseppe — User Profile</div>
+        <div class="profile-row"><span class="icon">🎓</span>23‑yr‑old medical student</div>
+        <div class="profile-row"><span class="icon">🚗</span>Commute: Caselle → Orbassano (3×/wk, passenger)</div>
+        <div class="profile-row"><span class="icon">⏱</span>45 min travel · €60/mo cost</div>
+        <div class="profile-row"><span class="icon">🛒</span>Shopping/errands: 3×/wk — drives alone</div>
+        <div class="profile-row"><span class="icon">🎭</span>Leisure: 2×/wk — drives alone</div>
+        <div class="profile-row"><span class="icon">💰</span>WTP: €15/mo extra for 30% less pollution</div>
+        <div class="profile-row"><span class="icon">🌱</span>Values sustainability &amp; safety</div>
+      </div>
+
+      <div class="counter-grid">
+        <div class="counter-card"><div class="counter-val" style="color:var(--red)">170</div><div class="counter-lbl">gCO₂/pkm Car</div></div>
+        <div class="counter-card"><div class="counter-val" style="color:var(--green)">14</div><div class="counter-lbl">gCO₂/pkm Train</div></div>
+        <div class="counter-card"><div class="counter-val" style="color:var(--orange)">€510</div><div class="counter-lbl">/mo True Car Cost</div></div>
+        <div class="counter-card"><div class="counter-val" style="color:var(--cyan)">€55</div><div class="counter-lbl">/mo PT Cost</div></div>
+      </div>
+
+      <div class="ctx-card" style="border-left-color:var(--red)"><strong>Data Gap:</strong> Car‑only users generate zero digital traces in PT systems — chicken‑and‑egg problem</div>
+      <div class="ctx-card" style="border-left-color:var(--orange)"><strong>Behavioral Inertia:</strong> Car use is System 1 (automatic). Loss aversion = 2.25× — losses hurt more than equivalent gains</div>
+      <div class="ctx-card" style="border-left-color:var(--purple)"><strong>No Direct Route:</strong> Caselle → Orbassano has no single PT line — requires intermodal transfers</div>
+    </div>
+
+    <!-- Column 2: Context & Corridor -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--cyan);padding-bottom:4px">Context &amp; Corridor</h3>
+
+      <!-- Corridor map -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🗺 Caselle → Orbassano Corridor</div>
+        <div class="corridor-map">
+          <div class="corridor-line">
+            <div class="corridor-stop" style="left:0%;background:var(--red)"><span class="corridor-label above" style="color:var(--red)">Caselle T.</span></div>
+            <div class="corridor-stop" style="left:25%;background:var(--orange)"><span class="corridor-label below" style="color:var(--orange)">Venaria</span></div>
+            <div class="corridor-stop" style="left:50%;background:var(--cyan)"><span class="corridor-label above" style="color:var(--cyan)">Torino P.S.</span></div>
+            <div class="corridor-stop" style="left:75%;background:var(--purple)"><span class="corridor-label below" style="color:var(--purple)">Lingotto</span></div>
+            <div class="corridor-stop" style="left:100%;background:var(--green)"><span class="corridor-label above" style="color:var(--green)">Orbassano</span></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px">Operators: GTT (urban PT) · SFM (regional rail) · Trenitalia · Voi/Lime (micro‑mobility)</div>
+      </div>
+
+      <div class="chart-box">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">📊 Mode Split — Turin Metro Area</div>
+        <canvas id="chartMode" height="130"></canvas>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🏙 Turin Context</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6">
+          • 100,000+ university students (PoliTo + UniTo)<br>
+          • Car‑dependent peri‑urban corridors with poor PT integration<br>
+          • Target: aged 18–30 periurban commuters<br>
+          • Theme: <em>"Inhabiting Time"</em> — transport as lived experience, not simply distance
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3: Benchmark -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--green);padding-bottom:4px;color:var(--green)">Benchmark</h3>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">🔍 Competitive Landscape</div>
+        <table class="bench-table">
+          <thead>
+            <tr><th>Feature</th><th>Moovit</th><th>Whim</th><th>GTT</th><th>MoveWise</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Route Planning</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="mw-col check">✓ RL</td></tr>
+            <tr><td>Integrated Payment</td><td class="cross">✗</td><td class="check">✓</td><td class="check">✓</td><td class="mw-col check">✓ QR</td></tr>
+            <tr><td>Insurance</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="mw-col check">✓</td></tr>
+            <tr><td>Car‑User Onboarding</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="mw-col check">✓</td></tr>
+            <tr><td>Behavior Change</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="mw-col check">✓ 4‑Layer</td></tr>
+            <tr><td>Self‑Sustaining</td><td>Ads</td><td>Sub</td><td>Public</td><td class="mw-col">E‑comm</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ctx-card" style="border-left-color:var(--green)"><strong>Key Differentiator:</strong> Moovit informs, Whim bundles, GTT sells tickets. <em>None actively change behavior.</em> MoveWise is the first to solve the car‑user data gap with RL‑powered personalized nudging.</div>
+
+      <div class="chart-box">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">💰 Giuseppe's Cost Comparison</div>
+        <canvas id="chartCost" height="120"></canvas>
+      </div>
+
+      <div class="card" style="font-size:11px;color:var(--text3);line-height:1.7">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px">📚 Key References</div>
+        Thaler &amp; Sunstein (2008) — Nudge Theory<br>
+        Kahneman &amp; Tversky (1979) — Prospect Theory<br>
+        Chorus et al. (2008) — Random Regret Minimization<br>
+        Hensher &amp; Hietanen (2023) — Mobility as a Feature<br>
+        Denmark Rejsekort — QR Data Collection Model<br>
+        Butler et al. (2021) — MaaS Barriers &amp; Risks
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━ SLIDE 4 — THE PROJECT ━━━━━━━━ -->
+<div class="slide" id="s4">
+  <div class="cols" style="align-items:flex-start">
+    <!-- Column 1: Concept & Technical -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--cyan);padding-bottom:4px">Concept &amp; Technical Core</h3>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">💡 Core Idea</div>
+        <p style="font-size:12px;color:var(--text2);line-height:1.55">MoveWise is a <strong style="color:var(--cyan)">MaaS super‑app</strong> that uses RL to transform private car users into sustainable commuters — not by telling them what to do, but by making the green choice the <strong style="color:var(--green)">easy, fun, and financially smart</strong> choice.</p>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🧠 RL Reward Function</div>
+        <div class="formula-box">
+r<sub>t</sub> = −[ <span class="hl">w₁·GC</span> + <span class="hg">w₂·E</span> + <span class="ho">w₃·Ψ<sub>behav</sub></span> + <span class="hp">w₄·Φ<sub>constr</sub></span> ] + <span class="hg">w₅·R<sub>rev</sub></span>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5">
+          <span class="hl">GC</span> = Generalized Cost · <span class="hg">E</span> = Emissions · <span class="ho">Ψ</span> = Behavioral Model · <span class="hp">Φ</span> = Constraints · <span class="hg">R</span> = Platform Revenue
+        </div>
+      </div>
+
+      <!-- Behavior change layers -->
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:2px">🎯 4‑Layer Behavior Change</div>
+        <div class="layer-card" style="border-left-color:var(--cyan)"><h4 style="color:var(--cyan)">Layer 1: Nudges</h4><p>Default green, social proof, loss framing, commitment devices, anchoring (hidden car cost €510 vs PT €55)</p></div>
+        <div class="layer-card" style="border-left-color:var(--green)"><h4 style="color:var(--green)">Layer 2: Gamification</h4><p>Green points, leaderboards, streaks, challenges, carbon budget, badges &amp; milestones</p></div>
+        <div class="layer-card" style="border-left-color:var(--orange)"><h4 style="color:var(--orange)">Layer 3: Economic</h4><p>Insurance discounts for PT users, employer packages, dynamic pricing, referral bonuses</p></div>
+        <div class="layer-card" style="border-left-color:var(--purple)"><h4 style="color:var(--purple)">Layer 4: Education</h4><p>True Cost Calculator, "Did You Know?" cards, monthly impact reports, community stories</p></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🔄 Nudge Selection RL</div>
+        <div class="formula-box" style="font-size:12px">
+Nudge*(i,t) = argmax<sub>n∈𝒩</sub> Q̂(s<sub>i</sub><sup>t</sup>, n; θ)
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">A second RL agent learns which nudge works best for each user — personalized, not one‑size‑fits‑all.</div>
+      </div>
+    </div>
+
+    <!-- Column 2: How to Use & Phased Adoption -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--green);padding-bottom:4px;color:var(--green)">Giuseppe's Journey</h3>
+
+      <div class="phase-list">
+        <div class="phase">
+          <div class="phase-num" style="background:rgba(220,38,38,.1);color:var(--red)">0</div>
+          <div class="phase-body"><strong>Onboarding via Services</strong><br>Downloads app for car insurance → parking finder → app builds mobility profile → True Cost Calculator reveals €510/mo real car cost</div>
+        </div>
+        <div class="phase">
+          <div class="phase-num" style="background:rgba(217,119,6,.1);color:var(--orange)">1</div>
+          <div class="phase-body"><strong>Family Car → P&amp;R → Train</strong><br>40 min · €45/mo · −50% CO₂<br>Preserves passenger productivity</div>
+        </div>
+        <div class="phase">
+          <div class="phase-num" style="background:rgba(8,145,178,.1);color:var(--cyan)">2</div>
+          <div class="phase-body"><strong>E‑Scooter → Train → Walk</strong><br>30 min · €55/mo · −75% CO₂<br>Full independence, no family needed</div>
+        </div>
+        <div class="phase">
+          <div class="phase-num" style="background:rgba(5,150,105,.1);color:var(--green)">3</div>
+          <div class="phase-body"><strong>Carpooling + Multimodal</strong><br>25 min · €50/mo · −80% CO₂<br>Peer matching, shared rides with classmates</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">📊 QR Data Collection</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.55">
+          <strong>Inspired by Denmark's Rejsekort:</strong><br>
+          • <strong>Tap‑In:</strong> QR scan at journey start → timestamp, GPS, mode<br>
+          • <strong>Tap‑Out:</strong> QR scan at destination → arrival time, location<br>
+          • <strong>Pricing:</strong> Third‑party fares (GTT, Trenitalia, Voi) with transparent service margin<br>
+          • <strong>Multi‑modal:</strong> Sequential scans reconstruct intermodal trips<br>
+          <br>
+          <strong style="color:var(--cyan)">Car users attracted via:</strong> Insurance, parking finder, fuel price comparison, carbon tracker, e‑commerce booking
+        </div>
+      </div>
+
+      <div class="sustain-grid">
+        <div class="sustain-card"><div class="sv" style="color:var(--cyan)">VOT</div><div class="sl">Context-Dependent<br>Value of Time</div></div>
+        <div class="sustain-card"><div class="sv" style="color:var(--orange)">HUR</div><div class="sl">Hybrid Utility‑<br>Regret Model</div></div>
+        <div class="sustain-card"><div class="sv" style="color:var(--purple)">PT</div><div class="sl">Prospect Theory<br>μ = 2.25</div></div>
+      </div>
+    </div>
+
+    <!-- Column 3: Sustainability & Revenue -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--orange);padding-bottom:4px;color:var(--orange)">Sustainability &amp; Revenue</h3>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">💼 "Skyscanner for Mobility"</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.55">
+          MoveWise aggregates all transport services — users search, compare &amp; book in one app.<br><br>
+          <strong>Revenue streams:</strong><br>
+          • Booking commissions (5–15%)<br>
+          • Subscription fees (monthly bundles)<br>
+          • Insurance commissions (IVASS‑compliant)<br>
+          • Corporate mobility packages<br>
+          • Anonymized data analytics
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,rgba(5,150,105,.05),rgba(8,145,178,.04))">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--green)">📈 Revenue Projection</div>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <div style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--green)">€600K</div><div style="font-size:10px;color:var(--text3)">Annual Revenue<br>(10K users)</div></div>
+          <div style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--cyan)">3–4K</div><div style="font-size:10px;color:var(--text3)">Users to<br>Break Even</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px">Operating costs: €250K–350K/yr (lean startup)</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">♻️ Sustainability Aspects</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.55">
+          <strong style="color:var(--green)">Environmental:</strong> −220 kg CO₂/yr per user (commute); −310 kg including all trips<br><br>
+          <strong style="color:var(--cyan)">Economic:</strong> Self‑sustaining e‑commerce model — no public subsidies required<br><br>
+          <strong style="color:var(--purple)">Social:</strong> Reduced car dependency for students; safer travel; inclusive multimodal access<br><br>
+          <strong style="color:var(--orange)">GDPR Compliant:</strong> Anonymized data; transparent consent; 90‑day exit notification
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🔧 Technologies Used</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          <span class="tag tag-cyan">Deep Q‑Learning</span>
+          <span class="tag tag-green">FastAPI</span>
+          <span class="tag tag-purple">PyTorch</span>
+          <span class="tag tag-orange">React.js</span>
+          <span class="tag tag-red">Prospect Theory</span>
+          <span class="tag tag-cyan">QR/NFC</span>
+          <span class="tag tag-green">HUR Model</span>
+          <span class="tag tag-purple">Nudge AI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━ SLIDE 5 — CONCLUSION & VALUE CREATION ━━━━━━━━ -->
+<div class="slide" id="s5">
+  <div class="cols" style="align-items:flex-start">
+    <!-- Column 1: Impact & Metrics -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--green);padding-bottom:4px;color:var(--green)">Measurable Impact</h3>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="metric-card">
+          <div class="metric-before">45 min</div>
+          <div class="metric-arrow">→</div>
+          <div class="metric-after" style="color:var(--green)">25 min</div>
+          <div class="metric-label">Commute<br>Time</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-before">€510/mo</div>
+          <div class="metric-arrow">→</div>
+          <div class="metric-after" style="color:var(--cyan)">€55/mo</div>
+          <div class="metric-label">True Monthly<br>Cost</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-before">170 g</div>
+          <div class="metric-arrow">→</div>
+          <div class="metric-after" style="color:var(--green)">14 g</div>
+          <div class="metric-label">CO₂ per<br>Passenger‑km</div>
+        </div>
+      </div>
+
+      <div class="impact-grid">
+        <div class="impact-card"><div class="impact-val" style="color:var(--green)">−80%</div><div class="impact-lbl">CO₂ Reduction</div></div>
+        <div class="impact-card"><div class="impact-val" style="color:var(--cyan)">−89%</div><div class="impact-lbl">Cost Savings</div></div>
+        <div class="impact-card"><div class="impact-val" style="color:var(--orange)">310 kg</div><div class="impact-lbl">CO₂ Saved/Yr</div></div>
+        <div class="impact-card"><div class="impact-val" style="color:var(--purple)">€4,100</div><div class="impact-lbl">Saved/Yr/User</div></div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,rgba(5,150,105,.05),rgba(8,145,178,.04))">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px">🌍 System‑Level Impact (10,000 users)</div>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:4px">
+          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--green)">−2,200</div><div style="font-size:10px;color:var(--text3)">Tonnes CO₂/yr</div></div>
+          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--cyan)">€1.6M</div><div style="font-size:10px;color:var(--text3)">Societal Benefit/yr</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2: Value Creation -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--cyan);padding-bottom:4px">Value Creation</h3>
+
+      <div class="value-row">
+        <div class="value-card" style="border-top:2px solid var(--green)">
+          <div class="vi">🌱</div>
+          <div class="vt" style="color:var(--green)">Environmental</div>
+          <div class="vd">310 kg CO₂ saved per user annually. At scale: 2,200 tonnes/yr with 10K users. Reduces urban noise, accidents &amp; congestion.</div>
+        </div>
+        <div class="value-card" style="border-top:2px solid var(--cyan)">
+          <div class="vi">💰</div>
+          <div class="vt" style="color:var(--cyan)">Economic</div>
+          <div class="vd">€4,100/yr saved per user. Self‑sustaining revenue model breaks even at 3–4K users. No public subsidies needed.</div>
+        </div>
+      </div>
+      <div class="value-row">
+        <div class="value-card" style="border-top:2px solid var(--purple)">
+          <div class="vi">🤝</div>
+          <div class="vt" style="color:var(--purple)">Social</div>
+          <div class="vd">Inclusive multimodal access for students. Safer travel routes. Community building through carpooling &amp; leaderboards.</div>
+        </div>
+        <div class="value-card" style="border-top:2px solid var(--orange)">
+          <div class="vi">🧠</div>
+          <div class="vt" style="color:var(--orange)">Behavioral</div>
+          <div class="vd">First platform to actively change car‑user behavior using RL‑powered personalized nudging &amp; psychology‑aware phased adoption.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🔮 Future Scalability</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6">
+          <strong>Phase A (Year 1):</strong> Turin student population — PoliTo + UniTo (100K+ students)<br>
+          <strong>Phase B (Year 2):</strong> All Turin metro periurban corridors — corporate partnerships<br>
+          <strong>Phase C (Year 3+):</strong> Italian cities with similar car‑dependency patterns (Milan suburbs, Rome)
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">📦 Disposal &amp; Data Legacy</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.55">
+          • QR infrastructure remains with transit operators<br>
+          • Anonymized OD data transferred to Città Metropolitana di Torino<br>
+          • Behavioral insights published as open dataset<br>
+          • User wallets refunded; 90‑day migration notice
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3: Final Pitch -->
+    <div class="col scroll-col">
+      <h3 style="border-bottom:2px solid var(--purple);padding-bottom:4px;color:var(--purple)">The Big Picture</h3>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">🎯 What Problem Does It Solve?</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.65">
+          <strong style="color:var(--red)">1.</strong> Car‑only users generate no data → solved via service integration (insurance, parking)<br>
+          <strong style="color:var(--orange)">2.</strong> Behavioral inertia prevents mode change → solved via 4‑layer nudging + phased adoption<br>
+          <strong style="color:var(--cyan)">3.</strong> No integrated mobility platform → solved via MaaS super‑app<br>
+          <strong style="color:var(--green)">4.</strong> MaaS financial viability → solved via e‑commerce revenue model
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item" style="--c:var(--red)"><div style="position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid var(--red);background:var(--bg)"></div><h4 style="color:var(--red)">Attract</h4><p>Car users install app for insurance &amp; parking</p></div>
+        <div class="tl-item" style="--c:var(--orange)"><div style="position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid var(--orange);background:var(--bg)"></div><h4 style="color:var(--orange)">Educate</h4><p>True Cost Calculator reveals hidden car costs</p></div>
+        <div class="tl-item" style="--c:var(--cyan)"><div style="position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid var(--cyan);background:var(--bg)"></div><h4 style="color:var(--cyan)">Nudge</h4><p>RL selects optimal behavioral interventions</p></div>
+        <div class="tl-item" style="--c:var(--green)"><div style="position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid var(--green);background:var(--bg)"></div><h4 style="color:var(--green)">Recommend</h4><p>Personalized multimodal routes users will follow</p></div>
+        <div class="tl-item" style="--c:var(--purple)"><div style="position:absolute;left:-19px;top:10px;width:10px;height:10px;border-radius:50%;border:2px solid var(--purple);background:var(--bg)"></div><h4 style="color:var(--purple)">Learn &amp; Sustain</h4><p>QR data improves RL; e‑commerce revenue sustains platform</p></div>
+      </div>
+
+      <div class="pitch-box" style="margin-top:6px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600">The One‑Sentence Pitch</div>
+        <div class="big" style="color:var(--text)">
+          "MoveWise is a MaaS super‑app that uses <span style="color:var(--cyan)">Rejsekort‑inspired QR ticketing</span>, <span style="color:var(--orange)">nudge psychology</span>, and <span style="color:var(--green)">Reinforcement Learning</span> to transform private car users into sustainable commuters — not by telling them what to do, but by making the green choice the <strong>easy, fun, and financially smart</strong> choice."
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:8px">
+        <div class="nexus-badge">NEXUS 2026 · BEST Politecnico di Torino</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Team MoveWise · March 7–8, 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<script>
+// ─── Slide Navigation ───
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+let current = 0;
+let transitioning = false;
+
+const nav = document.getElementById('nav');
+for (let i = 0; i < totalSlides; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  nav.appendChild(d);
+}
+
+function goTo(idx) {
+  if (idx === current || transitioning || idx < 0 || idx >= totalSlides) return;
+  transitioning = true;
+  slides[current].classList.remove('active');
+  slides[idx].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  document.getElementById('progress').style.width = ((idx + 1) / totalSlides * 100) + '%';
+  document.getElementById('slideLabel').textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+  current = idx;
+  setTimeout(() => transitioning = false, 500);
+}
+
+// Keyboard & wheel nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+});
+let wheelTimer = 0;
+document.addEventListener('wheel', e => {
+  if (Date.now() - wheelTimer < 800) return;
+  wheelTimer = Date.now();
+  if (e.deltaY > 30) goTo(current + 1);
+  else if (e.deltaY < -30) goTo(current - 1);
+}, { passive: true });
+
+// Touch nav
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].screenX;
+  if (Math.abs(diff) > 50) { diff > 0 ? goTo(current + 1) : goTo(current - 1); }
+});
+
+// ─── Charts ───
+function initCharts() {
+  // Mode split chart
+  const ctx1 = document.getElementById('chartMode');
+  if (ctx1) {
+    new Chart(ctx1, {
+      type: 'doughnut',
+      data: {
+        labels: ['Private Car', 'Public Transit', 'Walking', 'Cycling', 'Other'],
+        datasets: [{
+          data: [58, 22, 12, 5, 3],
+          backgroundColor: ['#dc2626', '#0891b2', '#7c3aed', '#059669', '#64748b'],
+          borderWidth: 0,
+          spacing: 2
+        }]
+      },
+      options: {
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#475569', font: { size: 11 }, padding: 8, boxWidth: 10 } }
+        }
+      }
+    });
+  }
+
+  // Cost comparison chart
+  const ctx2 = document.getElementById('chartCost');
+  if (ctx2) {
+    new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: ['True Car Cost', 'Phase 1\n(P&R+Train)', 'Phase 2\n(Scooter+Train)', 'Phase 3\n(Carpool)'],
+        datasets: [{
+          label: '€/month',
+          data: [510, 45, 55, 50],
+          backgroundColor: ['#dc2626', '#d97706', '#0891b2', '#059669'],
+          borderRadius: 4,
+          barThickness: 28
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        scales: {
+          x: { grid: { color: 'rgba(148,163,184,.12)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+}
+
+// Init charts when slide 3 becomes visible (or on load)
+initCharts();
+
+// ─── PDF Export ───
+async function exportPDF() {
+  const btn = document.getElementById('exportBtn');
+  btn.classList.add('exporting');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg> Exporting…';
+
+  const style = document.createElement('style');
+  style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(style);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1920, 1080] });
+
+    const savedCurrent = current;
+    // Show all slides in sequence and capture
+    for (let i = 0; i < totalSlides; i++) {
+      // Activate this slide
+      slides.forEach(s => s.classList.remove('active'));
+      slides[i].classList.add('active');
+
+      // Wait for rendering
+      await new Promise(r => setTimeout(r, 600));
+
+      const canvas = await html2canvas(document.body, {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: window.innerWidth,
+        height: window.innerHeight,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        logging: false,
+        ignoreElements: el => el.id === 'exportBtn'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      if (i > 0) pdf.addPage([1920, 1080], 'landscape');
+      pdf.addImage(imgData, 'JPEG', 0, 0, 1920, 1080);
+    }
+
+    // Restore original slide
+    slides.forEach(s => s.classList.remove('active'));
+    slides[savedCurrent].classList.add('active');
+
+    pdf.save('MoveWise_Presentation_NEXUS2026.pdf');
+  } catch (err) {
+    console.error('PDF export failed:', err);
+    alert('PDF export failed. Please try again.');
+  }
+
+  btn.classList.remove('exporting');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg> Export PDF';
+  style.remove();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "source_file": "Examples of final deliverables.pdf",
+  "source_path": "D:\\hachaton\\nexus\\RL-Mobility-Optimizer\\presentation\\Examples of final deliverables.pdf",
+  "page_count": 5,
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "- NEXUS a Hub for Innovation\n- Title of the work \n- Group Number \n- Name of the participants",
+      "char_count": 92
+    },
+    {
+      "page_number": 2,
+      "text": "PHOTO OF THE PROJECT\n(render, model, prototype,\nmockup, simulation,\nphotography of the physical\nmodel)",
+      "char_count": 102
+    },
+    {
+      "page_number": 3,
+      "text": "RESEARCH:\n- Problem analysis (data, statistics, trends)\n- Context (urban, suburban, global, local)\n- Critical issues in current mobility Benchmark (similar \nYOU CAN USE:\n- Clear graphs\n- Maps\n- Diagrams\n- Flowcharts\n- Highlighted keywordsprojects or existing solutions)",
+      "char_count": 269
+    },
+    {
+      "page_number": 4,
+      "text": "THE PROJECT\n- Concept (basic idea)\n- Technical operation (how does it work?)\n- Structure / materials / technologies used\n- How to use\n- Sustainability aspects\n- Technical drawings / sections / exploded  \nviews / functional diagrams",
+      "char_count": 231
+    },
+    {
+      "page_number": 5,
+      "text": "CONCLUSION\n- What problem does it actually solve?\n- Measurable benefits (time, costs, emissions,\n \n- Future scalability\n- Possible developments\n- Social, environmental and economic impactsafety , accessibility)",
+      "char_count": 210
+    }
+  ]
+}
