@@ -1,0 +1,73 @@
+# ==============================================================================
+# MoveWise — Docker Compose
+# ==============================================================================
+# Orchestrates both the React frontend and the RL backend.
+#
+# Usage:
+#   docker compose up              # Start both services
+#   docker compose up rl-engine    # Start only the RL API
+#   docker compose up frontend     # Start only the React app
+#   docker compose run rl-engine python -m rl_engine.train  # Run training
+#
+# The React frontend (port 5173) fetches from the RL API (port 8000).
+# CORS is pre-configured in api.py to allow cross-origin requests.
+#
+# NEXUS 2026 — Politecnico di Torino
+# ==============================================================================
+
+services:
+
+  # ─────────────────────────────────────────────────────────
+  #  RL Engine — FastAPI backend (Python + PyTorch)
+  # ─────────────────────────────────────────────────────────
+  rl-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movewise-rl-engine
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount rl_engine for live reload during development
+      - ./rl_engine:/app/rl_engine
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────
+  #  React Frontend — Vite dev server
+  # ─────────────────────────────────────────────────────────
+  frontend:
+    image: node:20-slim
+    container_name: movewise-frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./movewise-react:/app
+      - /app/node_modules    # Anonymous volume for node_modules
+    command: >
+      sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      rl-engine:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────
+  #  RL Training — One-off container to run training
+  # ─────────────────────────────────────────────────────────
+  rl-train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movewise-rl-train
+    command: ["python", "-m", "rl_engine.train"]
+    volumes:
+      - ./rl_engine:/app/rl_engine
+    profiles:
+      - training    # Only starts with: docker compose --profile training up rl-train

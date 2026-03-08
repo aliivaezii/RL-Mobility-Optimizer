@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+
+# Virtual environments
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js
+movewise-react/node_modules
+
+# Large generated files
+rl_engine/*.pth
+rl_engine/RL_Training_Results.pdf
+
+# Competition materials (not needed in container)
+Competition matirial/
