@@ -1,13 +1,26 @@
 """
 MoveWise RL Engine — Configuration & Constants
 ================================================
-All parameters from RL_MaaS_Formulation_v3.tex:
-  - Generalized Cost components
-  - Behavioral parameters (HUR model)
-  - Prospect Theory coefficients
-  - Transport mode characteristics (Turin metro area)
-  - Revenue model parameters
-  - Nudge catalog
+All parameters from RL_MaaS_Formulation_v3.tex (March 2026):
+
+Sections referenced:
+  §2 — Data collection (QR tap-in/tap-out, Rejsekort-inspired)
+  §3 — MaaS Super-App service portfolio (Insurance, Route, Payment, Carpool)
+  §4 — Behavior change toolkit (4 layers: Nudges, Gamification, Economics, Education)
+  §5 — Generalized Cost framework (context-dependent VOT, Prospect Theory)
+  §6 — Behavioral Realism: HUR model (Habit-Utility-Regret)
+  §7 — RL formulation (Enhanced state/action/reward, 11 constraints)
+  §8 — Giuseppe's phased adoption journey (Phase 0–3)
+
+Key equations:
+  Eq. 1 — Generalized Cost (multi-component decomposition)
+  Eq. 2 — Habit decay: H_t = H₀ · e^{−α·t}
+  Eq. 3 — Enhanced state S_t^app
+  Eq. 4 — 5-component reward function
+  Eq. 5 — Nudge selection: Nudge*(i,t) = argmax Q̂_nudge(s, nudge; θ)
+  Eq. 6 — Data quality constraint C11
+
+NEXUS 2026 — Politecnico di Torino
 """
 
 from dataclasses import dataclass, field
@@ -104,33 +117,44 @@ MODE_PROFILES: Dict[str, ModeProfile] = {
 
 @dataclass
 class UserProfile:
-    """Behavioral profile of a user (Giuseppe is the default)."""
+    """
+    Behavioral profile of a user (Giuseppe is the default).
+    
+    Source: v3 §1.1 — Giuseppe's Complete Profile, plus Q&A clarifications.
+    VOT values from Wardman (2004) and v3 §5 (context-dependent VOT).
+    HUR weights from v3 §6 (Habit-Utility-Regret model).
+    Segment from v3 §6 cultural segmentation.
+    """
     name: str = "Giuseppe"
     age: int = 23
-    # --- Value of Time (EUR/h) — context-dependent ---
-    vot_passenger: float = 3.7      # As passenger (can study)
-    vot_driver: float = 10.0        # As driver (can't study)
-    vot_train_seated: float = 4.4   # Train with seat
-    vot_bus_seated: float = 6.5     # Bus with seat
+    # --- Value of Time (EUR/h) — context-dependent (v3 §5) ---
+    vot_passenger: float = 3.7      # As car passenger (can study)
+    vot_driver: float = 10.0        # As car driver (cannot study)
+    vot_train_seated: float = 4.4   # Train with seat (table + Wi-Fi)
+    vot_bus_seated: float = 6.5     # Bus with seat (less stable)
     vot_carpool_passenger: float = 5.1  # Carpooling as passenger
-    # --- Behavioral parameters ---
+    # --- Behavioral parameters (v3 §6 — HUR model) ---
     habit_strength: float = 0.7     # H₀ (initial habit strength)
-    eco_sensitivity: float = 0.6    # γ_eco — weight on CO₂
-    loss_aversion: float = 2.25     # μ — Prospect Theory parameter
-    car_status: float = 0.15        # Low car identity
-    # --- HUR model weights ---
+    eco_sensitivity: float = 0.6    # γ_eco — weight on CO₂ impact
+    loss_aversion: float = 2.25     # μ — Prospect Theory (Kahneman & Tversky, 1979)
+    car_status: float = 0.15        # Low car identity ("sees car as polluting")
+    # --- HUR model weights (v3 §6) ---
     w_utility: float = 0.5          # Weight on utility maximization
-    w_regret: float = 0.3           # Weight on regret minimization
+    w_regret: float = 0.3           # Weight on regret minimization (Chorus, 2008)
     w_habit: float = 0.2            # Weight on habit persistence
-    # --- Budget constraints ---
-    wtp_extra: float = 15.0         # Willing to pay EUR 15/mo extra
-    current_monthly: float = 60.0   # Current perceived monthly cost
-    # --- Segment ---
+    # --- Budget constraints (v3 §1.1) ---
+    wtp_extra: float = 15.0         # Willing to pay EUR 15/mo extra for 30% pollution cut
+    current_monthly: float = 60.0   # Current perceived monthly cost (EUR)
+    monthly_budget: float = 75.0    # Max budget = current + WTP (EUR 60 + 15)
+    co2_target_monthly: float = 50.0  # Target monthly CO₂ (kg) — 30% reduction from ~70 kg
+    # --- Segment (v3 §6 — cultural segmentation) ---
     segment: str = "Hedonic Techy Ecologist"
-    # --- Commute pattern ---
-    commute_per_week: int = 3
-    errands_per_week: int = 3
-    leisure_per_week: int = 2
+    # --- Trip pattern (v3 §1.1 — all of Giuseppe's weekly trips) ---
+    commute_days: int = 3           # Mon/Wed/Fri to Orbassano
+    commute_per_week: int = 3       # Caselle → Orbassano (passenger)
+    errands_per_week: int = 3       # Shopping/errands (he drives alone)
+    leisure_per_week: int = 2       # Social/recreation (he drives alone)
+    trip_distance_km: float = 11.0  # Approx one-way corridor distance
 
 GIUSEPPE = UserProfile()
 
@@ -140,27 +164,34 @@ GIUSEPPE = UserProfile()
 
 @dataclass
 class RewardWeights:
-    """Weights for the 5-component reward function."""
-    w_gc: float = 0.35          # w₁: Generalized cost
-    w_emission: float = 0.20    # w₂: Environmental impact
-    w_behavior: float = 0.20    # w₃: Behavioral penalty (habit, regret)
-    w_constraint: float = 0.10  # w₄: Constraint violations
-    w_revenue: float = 0.15     # w₅: Platform revenue (new in v3)
+    """
+    Weights for the 5-component reward function (v3 Eq. 4):
+    
+    r_t = −[w₁·GC + w₂·E + w₃·Ψ_behavior + w₄·Φ_constraints] + w₅·R_revenue
+    
+    w₅ (revenue) is new in v3: aligns agent incentives with platform sustainability.
+    """
+    w_gc: float = 0.35          # w₁: Generalized Cost (lower is better)
+    w_emission: float = 0.20    # w₂: Environmental impact (CO₂ savings)
+    w_behavior: float = 0.20    # w₃: Behavioral penalty (habit resistance, regret)
+    w_constraint: float = 0.10  # w₄: Constraint violations (phase, budget, weather)
+    w_revenue: float = 0.15     # w₅: Platform revenue (e-commerce commission)
 
 DEFAULT_WEIGHTS = RewardWeights()
 
 # ═══════════════════════════════════════════════════════════════════
-#  NUDGE CATALOG — from v3 Section 4
+#  NUDGE CATALOG — from v3 §4.2 (Table 3: Nudge strategies)
+#  Based on Thaler & Sunstein (2008) Nudge Theory + gamification
 # ═══════════════════════════════════════════════════════════════════
 
 NUDGE_TYPES = [
-    "default_green",    # Show green option first
-    "social_proof",     # "87% of students take the train"
-    "loss_frame",       # "You're LOSING €2,100/yr"
-    "carbon_budget",    # Show monthly carbon usage
-    "streak_reminder",  # "5-day green streak! Don't break it!"
-    "commitment",       # "Try PT for 1 week — free ride back"
-    "anchoring",        # "Car: €510/mo vs PT: €55/mo"
+    "default_green",    # Show green option first (Default Effect)
+    "social_proof",     # "87% of students take the train" (Conformity)
+    "loss_frame",       # "You're LOSING €2,100/yr" (Prospect Theory)
+    "carbon_budget",    # Show monthly carbon usage (Salience)
+    "streak_reminder",  # "5-day green streak! Don't break it!" (Commitment)
+    "commitment",       # "Try PT for 1 week — free ride back" (Foot-in-door)
+    "anchoring",        # "Car: €510/mo vs PT: €55/mo" (Anchoring bias)
 ]
 
 NUM_NUDGES = len(NUDGE_TYPES)
@@ -186,26 +217,30 @@ NUDGE_EFFECTIVENESS = {
 }
 
 # ═══════════════════════════════════════════════════════════════════
-#  EMISSION FACTORS — EEA 2024
+#  EMISSION FACTORS — EEA (European Environment Agency) 2024
+#  Used in v3 §9 (Environmental Impact) and GC environmental cost
 # ═══════════════════════════════════════════════════════════════════
 
 EMISSION_FACTORS = {
-    "car": 140,         # g CO₂/km
-    "bus": 68,          # g CO₂/km
-    "train": 14,        # g CO₂/km
-    "escooter": 22,     # g CO₂/km
+    "car": 140,         # g CO₂/km (single-occupancy)
+    "bus": 68,          # g CO₂/km (per passenger, avg load)
+    "train": 14,        # g CO₂/km (per passenger, electric)
+    "escooter": 22,     # g CO₂/km (lifecycle including manufacture)
     "bike": 0,          # g CO₂/km
     "walk": 0,          # g CO₂/km
 }
 
 # ═══════════════════════════════════════════════════════════════════
-#  REVENUE MODEL — "Skyscanner for Mobility"
+#  REVENUE MODEL — "Skyscanner for Mobility" (v3 §3.5)
+#  MoveWise acts as an e-commerce aggregator: users search/book
+#  transport through MoveWise; providers pay commission per booking.
+#  Breakeven at ~3,000–4,000 active users (v3 revenue estimate).
 # ═══════════════════════════════════════════════════════════════════
 
-COMMISSION_RATE = 0.10          # 10% average commission on bookings
+COMMISSION_RATE = 0.10          # 10% average commission on bookings (5–15% range)
 SUBSCRIPTION_MONTHLY = 29.0     # EUR/mo all-inclusive plan
-INSURANCE_COMMISSION = 0.05     # 5% insurance commission
-AVG_MONTHLY_BOOKING_VALUE = 50  # EUR average monthly bookings/user
+INSURANCE_COMMISSION = 0.05     # 5% insurance commission (IVASS-compliant)
+AVG_MONTHLY_BOOKING_VALUE = 50  # EUR average monthly bookings per user
 
 # ═══════════════════════════════════════════════════════════════════
 #  RL HYPERPARAMETERS
@@ -213,7 +248,14 @@ AVG_MONTHLY_BOOKING_VALUE = 50  # EUR average monthly bookings/user
 
 @dataclass
 class RLConfig:
-    """Hyperparameters for the DQN agent."""
+    """
+    Hyperparameters for the DQN agent (v3 §7).
+    
+    Architecture: Double DQN (Mnih et al., 2015) with:
+      - Compound action space: 7 modes × 7 nudges = 49 actions
+      - Separate nudge Q-network (v3 Eq. 5)
+      - Experience replay + target network for stability
+    """
     # --- Network ---
     state_dim: int = 18         # Dimension of state vector
     hidden_dim: int = 128       # Hidden layer size

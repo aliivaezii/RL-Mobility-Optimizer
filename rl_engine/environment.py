@@ -1,14 +1,31 @@
 """
 MoveWise RL Engine — MaaS Environment (MDP)
 =============================================
-Implements the Markov Decision Process from v3:
-  - State: user profile + context + habit + phase + app interaction
-  - Action: (route_index, nudge_index)
-  - Reward: 5-component weighted reward
-  - Transitions: habit decay, phase progression, learning
+Implements the Markov Decision Process from v3 §7:
+
+State Space (v3 Eq. 3):
+  S_t^app = (services_used, search_history, nudge_response, gamification_level)
+  Extended to 18 dimensions including user profile, context, and app interaction.
+
+Action Space (v3 §7.2):
+  a_t = (route_t, nudge_t, promotion_t) — compound action.
+  Discretized: 7 modes × 7 nudges = 49 compound actions.
+
+Reward (v3 Eq. 4):
+  r_t = −[w₁·GC + w₂·E + w₃·Ψ_behavior + w₄·Φ_constraints] + w₅·R_revenue
+
+Transitions:
+  - Habit decay: H_t = H₀ · e^{−α·green_trips} (v3 Eq. 2)
+  - Phase progression (C10): 0→1 (2 green trips), 1→2 (habit<0.5), 2→3 (15+ green)
+  - User acceptance: HUR model (v3 §6) — Habit + Utility + Regret
+
+Constraints (v3 §7.4):
+  C10 — Phased adoption: modes unlock progressively
+  C11 — Data quality: P[QR tap completed | a_t] ≥ δ_data (v3 Eq. 6)
+  + Budget, weather, time constraints
 
 Simulates Giuseppe's 8 weekly trips (3 commute + 3 errands + 2 leisure)
-over a configurable number of weeks.
+over a configurable number of weeks (default: 7 weeks).
 """
 
 import numpy as np

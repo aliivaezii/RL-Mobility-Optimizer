@@ -80,12 +80,15 @@ Training on Giuseppe's profile (23-year-old student, Giaveno → Politecnico, 11
 
 ## Theory Reference
 
-Based on `RL_MaaS_Formulation_v3.tex`:
-- **Generalized Cost**: Eq. 1 (multi-component with VOT, transfers, comfort, reliability, walking, environment)
-- **Reward Function**: Eq. 4 (5-component weighted sum)
-- **Nudge Selection**: Eq. 5 (separate Q-network)
-- **Constraints**: C1–C11 (budget, time, capacity, phase, data quality)
-- **Behavioral Model**: Section 2.3 (HUR with Prospect Theory)
+Based on `RL_MaaS_Formulation_v3.tex` (March 2026):
+- **Generalized Cost**: §5 / Eq. 1 (multi-component with context-dependent VOT, Prospect Theory)
+- **Habit Decay**: §6 / Eq. 2 (H_t = H₀·e^{-αt}, HUR behavioral model)
+- **Enhanced State**: §7.1 / Eq. 3 (18-dim including app interaction data)
+- **Reward Function**: §7.3 / Eq. 4 (5-component: GC + CO₂ + Ψ_behavior + Φ_constraints + Revenue)
+- **Nudge Selection**: §4 / Eq. 5 (separate Q-network, 7 nudge types from Thaler & Sunstein)
+- **Data Quality**: §7.4 / Eq. 6 (C11 constraint — QR observability)
+- **Constraints**: C1–C11 (budget, time, capacity, phase C10, data quality C11)
+- **Behavior Change**: §4 (4-layer toolkit: Nudges, Gamification, Economics, Education)
 
 ## Integration with React Frontend
 

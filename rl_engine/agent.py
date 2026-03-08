@@ -1,12 +1,26 @@
 """
 MoveWise RL Engine — Deep Q-Network Agent
 ==========================================
-Implements the DQN from v3 Section 7:
-  - Deep Q-Network with experience replay
-  - Epsilon-greedy exploration with decay
-  - Target network for stability
-  - Compound action: (route, nudge) selection
-  - Second agent for nudge selection (Eq. 5 in v3)
+Implements the DQN from v3 §7 (based on Mnih et al., 2015):
+
+Main Q-Network:
+  Selects compound (route, nudge) actions from state → Q(s, a; θ).
+  Double DQN: main net selects action, target net evaluates value.
+
+Nudge Q-Network (v3 Eq. 5):
+  Nudge*(i,t) = argmax Q̂_nudge(s_i^t, nudge; θ_nudge)
+  Separate smaller network that selects the optimal nudge given
+  the current state and the chosen transport mode.
+
+Training:
+  - Experience replay buffer (deque, default 10k transitions)
+  - Epsilon-greedy exploration with exponential decay
+  - Gradient clipping (max norm = 1.0) for stability
+  - Periodic target network updates (every 20 episodes)
+
+References:
+  Mnih, V. et al. (2015). Human-Level Control through Deep RL. Nature.
+  v3 §4 — Nudge selection strategies (Table 3)
 """
 
 import numpy as np
