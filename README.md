@@ -155,6 +155,86 @@ Nudge types include:
 
 ---
 
+## RL Engine Implementation (`rl_engine/`)
+
+The `rl_engine/` module is a **fully functional Python implementation** of the RL formulation described above, based on `RL_MaaS_Formulation_v3.tex`. It replaces the static mock data with live, trained RL decisions.
+
+### Architecture
+
+```text
+rl_engine/
+├── config.py              # Mode profiles, Giuseppe's profile, HUR parameters, reward weights
+├── generalized_cost.py    # Full GC with Prospect Theory (μ=2.25), context-dependent VOT
+├── environment.py         # MDP: 18-dim state, 49 compound actions, HUR acceptance model
+├── agent.py               # Double DQN + separate nudge Q-network (Eq. 5)
+├── train.py               # Training pipeline + evaluation + PDF visualization
+├── api.py                 # FastAPI backend for React frontend integration
+├── requirements.txt       # Python dependencies (numpy, torch, matplotlib, fastapi)
+└── README.md              # Detailed RL engine documentation
+```
+
+### Key Technical Features
+
+| Component | Implementation | Reference |
+|-----------|---------------|-----------|
+| **State Space** | 18 dimensions (habit, eco-sensitivity, loss aversion, phase, weather, trip type, engagement...) | v3 Eq. 3 |
+| **Action Space** | Compound: 7 transport modes × 7 nudge types = 49 actions | v3 §7.2 |
+| **Reward** | 5-component: −[w₁·GC + w₂·CO₂ + w₃·Ψ_behavior + w₄·Φ_constraints] + w₅·Revenue | v3 Eq. 4 |
+| **GC Function** | Multi-component with transfer penalties (3.5 EUR, Wardman 2004), productivity-adjusted VOT | v3 §5 |
+| **Prospect Theory** | Loss aversion μ = 2.25 — switching costs feel 2.25× worse (Kahneman & Tversky, 1979) | v3 §5 |
+| **Behavioral Model** | HUR acceptance: habit resistance + utility + eco-motivation + nudge effectiveness | v3 §6 |
+| **Habit Decay** | H_t = H₀ · e^{−α·green_trips} — exponential decay as user adopts green modes | v3 Eq. 2 |
+| **Phase Adoption** | 4-phase progressive mode unlocking (C10 constraint) | v3 §8 |
+| **Nudge Agent** | Separate Q-network for personalised nudge selection | v3 Eq. 5 |
+| **Data Quality** | C11 constraint — prefer modes that generate observable QR data | v3 Eq. 6 |
+
+### Training Results
+
+Training on Giuseppe's profile (23-year-old student, Caselle Torinese → Orbassano, 11 km):
+
+| Metric | Before RL | After 500 Episodes | Change |
+|--------|-----------|-------------------|--------|
+| Green Trip Ratio | 0% | **70.5%** | ↑ 70.5 pp |
+| CO₂ Saved (7-week sim) | 0 kg | **85.4 kg** | New savings |
+| Car Habit Strength | 0.70 | **0.10** | ↓ 85.7% |
+| Adoption Phase | 0 (Onboarding) | **3 (Optimised)** | Full journey |
+| User Satisfaction | 0.50 | **0.52** | Maintained |
+
+### Quick Start (RL Engine)
+
+```bash
+# Install dependencies
+pip install -r rl_engine/requirements.txt
+
+# Run full training pipeline (GC analysis → DQN training → evaluation → PDF)
+python -m rl_engine.train
+
+# Start the API server (replaces mockData.js with live RL decisions)
+uvicorn rl_engine.api:app --reload --port 8000
+```
+
+### Docker Support
+
+```bash
+# Build and start the full stack (RL API + React frontend)
+docker compose up
+
+# Run training only
+docker compose --profile training run rl-train
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/routes/{trip_type}` | GET | Ranked routes with GC scores (replaces `mockData.routeOptions`) |
+| `/api/nudge/select` | GET | Optimal nudge for current user state |
+| `/api/user/profile` | GET | Behavioral parameters (powers ProfileScreen HUR display) |
+| `/api/user/trip` | POST | Record a trip, get updated habit/phase/points |
+| `/api/simulation/run` | GET | Run a full training demo |
+
+---
+
 ## Features in Detail
 
 ### Core Features
@@ -271,7 +351,17 @@ Nudge types include:
 ## Project Structure
 
 ```text
-movewise-react/
+rl_engine/                         # ← NEW: Full RL backend (Python)
+  config.py                        # Mode profiles, user params, HUR constants, reward weights
+  generalized_cost.py              # GC function with Prospect Theory (μ=2.25), context-dependent VOT
+  environment.py                   # MDP: 18-dim state, 49 actions, HUR acceptance, phased adoption
+  agent.py                         # Double DQN + nudge Q-network (v3 Eq. 5)
+  train.py                         # Training pipeline (500 ep) + evaluation + PDF visualisation
+  api.py                           # FastAPI server — replaces mockData.js with live RL decisions
+  requirements.txt                 # Python dependencies
+  README.md                        # Detailed RL engine documentation
+
+movewise-react/                    # React frontend (Vite + Three.js + Leaflet)
   src/
     App.jsx                    # Root: consent → splash → onboarding overlay → main routing
     main.jsx                   # Entry point + Leaflet CSS import
@@ -298,16 +388,36 @@ movewise-react/
   public/
     assets/
       logo.jpg                 # MoveWise logo
+
+Dockerfile                         # Python 3.11-slim, CPU-only PyTorch, health check
+docker-compose.yml                 # 3 services: rl-engine, frontend, rl-train
+.dockerignore                      # Excludes .git, node_modules, .pth, __pycache__
 ```
 
 ---
 
 ## Install and Run
 
+### Option A: Docker (recommended)
+
+```bash
+docker compose up          # Starts RL API (port 8000) + React frontend (port 5173)
+```
+
+### Option B: Manual
+
+**Frontend:**
 ```bash
 cd movewise-react
 npm install
 npm run dev
+```
+
+**RL Engine:**
+```bash
+pip install -r rl_engine/requirements.txt
+python -m rl_engine.train              # Train the DQN (500 episodes, ~2 min)
+uvicorn rl_engine.api:app --port 8000  # Start the API server
 ```
 
 ## Build for Production
