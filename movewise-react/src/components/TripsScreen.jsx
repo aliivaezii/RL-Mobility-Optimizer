@@ -1,7 +1,9 @@
-import { useState, Suspense } from "react";
+import { useState, useCallback, Suspense } from "react";
 import Card from "./ui/Card";
 import { routeOptions } from "../data/mockData";
 import RouteArc from "./three/RouteArc";
+import LocationPickerMap from "./LocationPickerMap";
+import TimeScrollPicker from "./TimeScrollPicker";
 
 const routeTabs = [
   { key: "best", label: "\u{1F33F} Best for You", filter: (r) => r, sort: (a, b) => a.gcScore - b.gcScore },
@@ -9,25 +11,6 @@ const routeTabs = [
   { key: "fastest", label: "\u26A1 Fastest", filter: (r) => r, sort: (a, b) => parseInt(a.totalTime) - parseInt(b.totalTime) },
   { key: "eco", label: "\u{1F30D} Greenest", filter: (r) => r, sort: (a, b) => parseFloat(b.co2) - parseFloat(a.co2) },
 ];
-
-function MiniMap() {
-  return (
-    <svg viewBox="0 0 100 120" className="mini-map-svg">
-      <path d="M15 10 L50 55 L85 105" fill="none" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round" />
-      <path d="M10 50 L90 50" fill="none" stroke="#e2e8f0" strokeWidth="2" />
-      <path d="M50 5 L50 115" fill="none" stroke="#e2e8f0" strokeWidth="2" />
-      <path d="M25 15 L45 45 L75 100" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeDasharray="4 2" strokeLinecap="round" />
-      <circle cx="25" cy="15" r="5" fill="#22c55e" />
-      <circle cx="25" cy="15" r="2" fill="#fff" />
-      <circle cx="75" cy="100" r="5" fill="#3b82f6" />
-      <circle cx="75" cy="100" r="2" fill="#fff" />
-      <rect x="43" y="42" width="14" height="10" rx="2" fill="#f59e0b" opacity="0.6" />
-      <text x="50" y="49" textAnchor="middle" fontSize="5" fill="#fff">{"\u{1F682}"}</text>
-      <text x="25" y="8" textAnchor="middle" fontSize="4.5" fill="#22c55e" fontWeight="bold">Caselle</text>
-      <text x="75" y="115" textAnchor="middle" fontSize="4.5" fill="#3b82f6" fontWeight="bold">Orbassano</text>
-    </svg>
-  );
-}
 
 export default function TripsScreen({ onNavigate, onFeedback }) {
   const [selectedRoute, setSelectedRoute] = useState(null);
@@ -37,6 +20,9 @@ export default function TripsScreen({ onNavigate, onFeedback }) {
   const [timeMode, setTimeMode] = useState("leave");
   const [timeValue, setTimeValue] = useState("07:40");
   const [activeTab, setActiveTab] = useState("best");
+
+  const handleMapFrom = useCallback((name) => { setFromInput(name); onFeedback(`Origin set: ${name}`); }, [onFeedback]);
+  const handleMapTo = useCallback((name) => { setToInput(name); onFeedback(`Destination set: ${name}`); }, [onFeedback]);
 
   const refreshRoutes = () => {
     setLoading(true);
@@ -69,9 +55,6 @@ export default function TripsScreen({ onNavigate, onFeedback }) {
                 <input type="text" value={fromInput} onChange={(e) => setFromInput(e.target.value)} placeholder="Enter origin..." />
               </div>
             </div>
-            <div className="od-swap-line">
-              <button className="od-swap-btn" onClick={() => { const tmp = fromInput; setFromInput(toInput); setToInput(tmp); }} title="Swap">{"\u21C5"}</button>
-            </div>
             <div className="od-input-row">
               <span className="od-dot blue" />
               <div className="od-input-field">
@@ -80,8 +63,9 @@ export default function TripsScreen({ onNavigate, onFeedback }) {
               </div>
             </div>
           </div>
-          <div className="od-mini-map" title="Tap to select on map">
-            <MiniMap />
+          <div className="od-side-actions">
+            <button className="od-swap-btn" onClick={() => { const tmp = fromInput; setFromInput(toInput); setToInput(tmp); }} title="Swap">{"\u21C5"}</button>
+            <LocationPickerMap onFromChange={handleMapFrom} onToChange={handleMapTo} />
           </div>
         </div>
         <div className="od-time-row">
@@ -89,7 +73,7 @@ export default function TripsScreen({ onNavigate, onFeedback }) {
             <button className={`time-toggle-btn${timeMode === "leave" ? " active" : ""}`} onClick={() => setTimeMode("leave")}>Leave at</button>
             <button className={`time-toggle-btn${timeMode === "arrive" ? " active" : ""}`} onClick={() => setTimeMode("arrive")}>Arrive by</button>
           </div>
-          <input type="time" className="od-time-input" value={timeValue} onChange={(e) => setTimeValue(e.target.value)} />
+          <TimeScrollPicker value={timeValue} onChange={setTimeValue} />
           <button className="btn solid sm" onClick={refreshRoutes}>Search</button>
         </div>
       </Card>

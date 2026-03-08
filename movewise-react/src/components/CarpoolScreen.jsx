@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
 import Card from "./ui/Card";
 import { carpoolMatches, carpoolHistory } from "../data/mockData";
+import LocationPickerMap from "./LocationPickerMap";
+import TimeScrollPicker from "./TimeScrollPicker";
 
 function CarpoolMap() {
   const mapRef = useRef(null);
@@ -31,6 +33,9 @@ export default function CarpoolScreen({ onNavigate, onFeedback }) {
   const [seats, setSeats] = useState(1);
   const [role, setRole] = useState("rider");
   const [showHistory, setShowHistory] = useState(false);
+
+  const handleMapFrom = useCallback((name) => { setFromInput(name); onFeedback(`Pickup set: ${name}`); }, [onFeedback]);
+  const handleMapTo = useCallback((name) => { setToInput(name); onFeedback(`Drop-off set: ${name}`); }, [onFeedback]);
 
   return (
     <>
@@ -95,9 +100,6 @@ export default function CarpoolScreen({ onNavigate, onFeedback }) {
                 <input type="text" value={fromInput} onChange={(e) => setFromInput(e.target.value)} placeholder="Enter origin..." />
               </div>
             </div>
-            <div className="od-swap-line">
-              <button className="od-swap-btn" onClick={() => { const tmp = fromInput; setFromInput(toInput); setToInput(tmp); }} title="Swap">{"\u21C5"}</button>
-            </div>
             <div className="od-input-row">
               <span className="od-dot blue" />
               <div className="od-input-field">
@@ -106,18 +108,18 @@ export default function CarpoolScreen({ onNavigate, onFeedback }) {
               </div>
             </div>
           </div>
-          <div className="od-mini-map" style={{ background: "linear-gradient(135deg, #f3e8ff, #ede9fe)" }}>
-            <div style={{ textAlign: "center", paddingTop: 24, fontSize: 28 }}>{"\u{1F697}"}</div>
-            <div style={{ textAlign: "center", fontSize: 10, color: "#7c3aed", fontWeight: 600 }}>Carpool</div>
+          <div className="od-side-actions">
+            <button className="od-swap-btn" onClick={() => { const tmp = fromInput; setFromInput(toInput); setToInput(tmp); }} title="Swap">{"\u21C5"}</button>
+            <LocationPickerMap onFromChange={handleMapFrom} onToChange={handleMapTo} accentColor="#7c3aed" />
           </div>
         </div>
         <div className="od-time-row">
-          <div className="cp-field half" style={{ flex: 1 }}>
-            <label style={{ fontSize: 11, color: "#64748b", marginBottom: 2 }}>{"\u23F0"} Departure</label>
-            <input type="time" className="od-time-input" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
+          <div className="cp-depart-field">
+            <label>{"\u23F0"} Departure</label>
+            <TimeScrollPicker value={timeInput} onChange={setTimeInput} accentColor="#7c3aed" />
           </div>
           <div className="cp-seats-inline">
-            <label style={{ fontSize: 11, color: "#64748b" }}>{"\u{1F4BA}"} Seats</label>
+            <label>{"\u{1F4BA}"} Seats</label>
             <div className="cp-seats">
               <button onClick={() => setSeats(Math.max(1, seats - 1))}>-</button>
               <span>{seats}</span>

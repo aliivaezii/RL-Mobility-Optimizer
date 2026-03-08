@@ -2666,13 +2666,19 @@ body {
 /* ===== ROUTE PLANNER REDESIGN ===== */
 .od-input-card {
   padding: 12px 14px !important;
+  position: relative;
+  overflow: visible;
 }
 .od-input-layout {
   display: flex;
   gap: 10px;
+  position: relative;
 }
 .od-inputs {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .od-input-row {
   display: flex;
@@ -2708,18 +2714,26 @@ body {
   align-items: center;
   padding: 2px 0 2px 16px;
 }
+.od-side-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
 .od-swap-btn {
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  font-size: 12px;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 .od-swap-btn:hover {
   background: #dcfce7;
@@ -2743,6 +2757,285 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/* ===== LOCATION PICKER MAP (shared) ===== */
+.location-picker-wrap {
+  position: relative;
+  width: 80px;
+  height: 70px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  z-index: 2;
+}
+.location-picker-wrap.lp-expanded {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, 92vw);
+  height: 55vh;
+  z-index: 1000;
+  border-color: var(--green);
+  box-shadow: 0 16px 48px rgba(0,0,0,.3);
+  border-radius: 16px;
+}
+.location-picker-map {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* Backdrop when expanded */
+.location-picker-wrap.lp-expanded::before {
+  content: '';
+  position: fixed;
+  inset: -200vh -200vw;
+  background: rgba(0,0,0,.45);
+  z-index: -1;
+}
+
+/* Status bar with origin/dest chips */
+.lp-status-bar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 6;
+  pointer-events: none;
+}
+.lp-chip {
+  flex: 1;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1.5px solid transparent;
+  transition: all 0.2s;
+}
+.lp-chip.active {
+  border-color: #3b82f6;
+  color: #334155;
+  box-shadow: 0 0 0 2px rgba(59,130,246,.15);
+}
+.lp-chip.set {
+  color: #334155;
+}
+
+.lp-pick-hint {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 7px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  z-index: 5;
+  pointer-events: none;
+  border: 1px solid var(--line);
+}
+
+.lp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.lp-dot.green { background: #22c55e; }
+.lp-dot.blue { background: #3b82f6; }
+
+.lp-done-btn {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  transition: transform 0.15s;
+}
+.lp-done-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+/* Carpool departure field */
+.cp-depart-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.cp-depart-field label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* ===== TIME SCROLL PICKER (iOS-style) ===== */
+.tsp-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.tsp-trigger:hover, .tsp-trigger:focus {
+  border-color: var(--green);
+  outline: none;
+}
+.tsp-trigger-icon {
+  font-size: 14px;
+}
+.tsp-trigger-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tsp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: tspFadeIn 0.2s ease;
+}
+@keyframes tspFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.tsp-popup {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 0 20px;
+  position: relative;
+  animation: tspSlideUp 0.3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes tspSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.tsp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+.tsp-done {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tsp-wheels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 190px;
+  position: relative;
+  gap: 0;
+}
+.tsp-column {
+  width: 70px;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.tsp-scroll {
+  height: 100%;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: y mandatory;
+}
+.tsp-scroll::-webkit-scrollbar { display: none; }
+.tsp-spacer {
+  height: 76px;
+}
+.tsp-item {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 500;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s;
+  scroll-snap-align: center;
+  user-select: none;
+}
+.tsp-item.active {
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 24px;
+}
+.tsp-colon {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-dark);
+  padding: 0 4px;
+  line-height: 1;
+  margin-top: -2px;
+}
+.tsp-highlight {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px;
+  height: 40px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-radius: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 .od-time-row {
   display: flex;
   align-items: center;
