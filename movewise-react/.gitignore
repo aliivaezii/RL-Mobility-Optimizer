@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PyTorch model weights (large files, regenerate with train.py)
+rl_engine/*.pth
+
+# Generated outputs (regenerate with train.py)
+rl_engine/RL_Training_Results.pdf
+
+# Node.js (for movewise-react/)
+node_modules/
