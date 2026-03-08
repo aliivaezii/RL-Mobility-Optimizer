@@ -2786,7 +2786,7 @@ body {
 .location-picker-wrap {
   position: relative;
   width: 130px;
-  height: 120px;
+  height: 1200px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
   overflow: hidden;
