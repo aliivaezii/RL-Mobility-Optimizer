@@ -11,6 +11,17 @@ Architecture (v3 §3 — MaaS Super-App Service Portfolio):
   - User behavioral profile tracking (v3 §6 — HUR model)
   - Real-time trip recording with habit/phase updates
 
+MaaS integration level context (Prof. Pronello — ITS/MaaS course):
+  This API implements MaaS Level 2–3 backend services:
+  - Level 2 (Booking & Payment): QR tap-in/tap-out trip recording,
+    unified wallet, cross-operator ticketing
+  - Level 3 (Bundles): Subscription-based mode packages, dynamic
+    bundle recommendations via RL
+  - Level 4 (Policy integration): Insurance-linked PT incentives,
+    gamification, and TDM nudging
+  Each QR tap generates digital Revealed Preference (RP) data — the
+  modern equivalent of travel diaries and CATI/CAWI mobility surveys.
+
 Interface contract:
   All response shapes match the data structures in movewise-react/src/data/mockData.js
   so the React components can switch from static imports to fetch() with zero changes.

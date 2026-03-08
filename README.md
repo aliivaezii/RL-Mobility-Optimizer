@@ -163,6 +163,94 @@ Nudge types include:
 
 ---
 
+## Theoretical Framework — Academic Foundation
+
+MoveWise is grounded in the transport engineering theory taught in *Prof. Cristina Pronello's* ITS/MaaS course at Politecnico di Torino. This section maps each course concept to its concrete implementation in the project.
+
+### Where MoveWise Sits in the 4-Step Model (G-D-M-A)
+
+Classical transport demand modelling follows the **4-step sequential model**:
+
+| Step | Name | Classical Tool | MoveWise Implementation |
+|------|------|---------------|------------------------|
+| 1 | **Trip Generation** | Regression / cross-classification | User profile: commute pattern (3×/week), errands (3×), leisure (2×) |
+| 2 | **Trip Distribution** | Gravitational model / Furness (doubly-constrained) | O-D pair: Caselle Torinese → Orbassano (Giuseppe's corridor) |
+| 3 | **Mode Choice** | Multinomial Logit (MNL) / Nested Logit | **RL agent replaces MNL** — DQN learns personalised mode ranking |
+| 4 | **Traffic Assignment** | Wardrop's User Equilibrium / All-or-Nothing | System Optimum nudging: RL aims for SO (social welfare) not just UE |
+
+MoveWise focuses on **Step 3 (Mode Choice)** — exactly where MaaS platforms create value — while being informed by Steps 1–2 (user trip patterns and O-D demand) and influencing Step 4 (pushing the system toward **System Optimum** rather than individual **User Equilibrium**, per Wardrop's first and second principles).
+
+### Random Utility Theory (RUT) → Reinforcement Learning
+
+Traditional mode choice models use **Random Utility Theory (RUT)**: the probability of choosing mode $j$ is:
+
+$$P(j) = \frac{e^{V_j}}{\sum_k e^{V_k}}$$
+
+where $V_j = \beta_1 \cdot \text{time}_j + \beta_2 \cdot \text{cost}_j + \ldots$ is the **systematic utility** and the error term follows a **Gumbel distribution** (giving the familiar **Multinomial Logit / MNL** form).
+
+**Why MoveWise goes beyond MNL:**
+
+| MNL Limitation | MoveWise Solution |
+|---------------|-------------------|
+| **IIA property** (Independence of Irrelevant Alternatives — the "red bus / blue bus" problem) | DQN has no IIA constraint — it learns mode correlations implicitly |
+| **Fixed coefficients** — same β for all users | **Personalised weights** per user from behavioral profile (HUR model) |
+| **No learning** — static estimation from survey data | **Online learning** — agent adapts from observed choices in real time |
+| **Requires Stated/Revealed Preference surveys** | App generates **digital Revealed Preference data** continuously via QR tap-in/tap-out |
+
+A **Nested Logit** model would partially solve IIA by grouping similar modes (e.g., all PT modes in one nest). Our RL architecture achieves the same effect without explicit nesting — the DQN's hidden layers learn the correlation structure.
+
+### Generalised Cost (GC) — From Theory to Code
+
+The **Generalised Cost** is the central concept in transport supply modelling. Our implementation in `rl_engine/generalized_cost.py` follows the full decomposed form:
+
+$$GC_j = \underbrace{VOT_j \cdot t_j}_{\text{time cost}} + \underbrace{c_j}_{\text{monetary}} + \underbrace{\tau \cdot n_j}_{\text{transfer penalty}} + \underbrace{(1-r_j) \cdot \rho}_{\text{reliability}} + \underbrace{(1-\kappa_j) \cdot \phi}_{\text{comfort}} + \underbrace{\omega \cdot w_j}_{\text{walking}} + \underbrace{\gamma_{eco} \cdot e_j \cdot SCC}_{\text{environmental}}$$
+
+Key enhancements over textbook GC:
+- **Context-dependent VOT**: Productivity-adjusted (car passenger 3.7 EUR/h ≠ car driver 10.0 EUR/h) — reflects that **derived demand** theory means travel time is not pure waste
+- **Prospect Theory adjustment** (Kahneman & Tversky, 1979): Losses from switching are weighted μ = 2.25× more than equivalent gains
+- **Weather and peak penalties**: Non-additive context adjustments (cf. lecture on separable vs non-separable cost functions)
+
+### Surveys & Data Collection — Digital RP
+
+Classical transport planning relies on **Revealed Preference (RP)** surveys (observing actual choices) and **Stated Preference (SP)** surveys (hypothetical scenarios). These are costly, suffer from **non-response bias**, and use methods like **CATI** (telephone), **CAWI** (web), or **PAPI** (paper).
+
+MoveWise generates **continuous digital RP data** at near-zero marginal cost:
+- **QR tap-in/tap-out** records actual mode choices (equivalent to an automated travel diary)
+- **App interactions** reveal preferences without asking (implicit SP)
+- **Profile priority sliders** are a digital form of **Likert-scale** preference measurement
+- **Screen-line equivalent**: Every QR tap is a digital observation point (analogous to manual screen-line / cordon counts)
+
+### MaaS Integration Levels
+
+The literature (Sochor et al., 2018) defines **5 MaaS integration levels**:
+
+| Level | Name | Description | MoveWise? |
+|-------|------|-------------|-----------|
+| 0 | **No integration** | Separate apps per mode | — |
+| 1 | **Information** | Multimodal journey planner | ✅ Route planner |
+| 2 | **Booking & Payment** | Unified ticketing across modes | ✅ QR tap-in/tap-out + digital wallet |
+| 3 | **Bundles** | Subscription packages combining modes | ✅ 3 subscription tiers (Pay-go / Bundle / Premium) |
+| 4 | **Policy integration** | Government incentives, regulation alignment | ✅ Insurance-linked PT incentives + gamification nudges |
+
+MoveWise operates at **Level 3–4**, consistent with advanced MaaS pilots like **UbiGo** (Gothenburg), **Whim** (Helsinki), and **myCicero** (Italy). The insurance-linked incentive mechanism and RL-driven behavioral nudging push it beyond pure aggregation into active **Travel Demand Management (TDM)**.
+
+### Transport Supply Network Concepts
+
+The project embeds supply-side transport engineering concepts:
+- **O-D Matrix**: Giuseppe's corridor (Caselle Torinese → Orbassano) is a concrete O-D pair with known travel characteristics
+- **Multimodal network**: The 7 mode alternatives represent paths through a multimodal **transport network graph** $G = (N, L)$ where nodes include centroids (home, campus), belt nodes (stations), and real nodes (stops)
+- **Derived demand**: Travel is not consumed for its own sake — Giuseppe travels to reach the university; our productivity-adjusted VOT reflects this
+- **Induced demand / Elasticity**: By reducing the GC of sustainable modes, MoveWise may induce additional green trips (positive elasticity response) — the app tracks this via trip frequency monitoring
+
+### Regulatory & Policy Alignment
+
+- **GDPR** (Regulation 2016/679): Consent prompt implements Articles 6, 7, 13, 17, 20. Data minimisation, pseudonymisation, right to erasure
+- **French LOM Law** (Loi d'Orientation des Mobilités, 2019): Establishes MaaS regulatory framework — open data mandates, mobility operator obligations, universal accessibility
+- **IVASS** (Italian Insurance Authority): Insurance data sharing via authorised intermediary, compliant with Italian insurance regulation
+- **Accessibility**: Universal service obligation — app supports all user segments including those without smartphones (QR fallback)
+
+---
+
 ## Features in Detail
 
 ### Core Features

@@ -18,6 +18,23 @@ Training:
   - Gradient clipping (max norm = 1.0) for stability
   - Periodic target network updates (every 20 episodes)
 
+Relation to classical discrete choice (Prof. Pronello — ITS/MaaS course):
+  - In RUT-based mode choice, a Multinomial Logit (MNL) model assigns
+    choice probabilities P(j) = exp(V_j)/Σ exp(V_k).  The DQN agent
+    replaces this with a learned Q-function that maps states to action
+    values.  Unlike MNL:
+      (a) No IIA property — the DQN captures mode correlations that
+          Nested Logit only partially resolves through nesting;
+      (b) Dynamic learning — coefficients update from observed trips
+          (digital Revealed Preference data from QR taps);
+      (c) Compound actions — joint mode + nudge selection enables
+          Travel Demand Management (TDM), actively steering the
+          system toward Wardrop's System Optimum (SO).
+  - The nudge network applies principles from behavioural economics
+    (Prospect Theory, loss aversion, status quo bias, social proof)
+    to overcome habitual car use — addressing the bounded rationality
+    that RUT's perfect-rationality assumption ignores.
+
 References:
   Mnih, V. et al. (2015). Human-Level Control through Deep RL. Nature.
   v3 §4 — Nudge selection strategies (Table 3)

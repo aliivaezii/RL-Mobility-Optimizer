@@ -15,9 +15,28 @@ With adjustments:
   - Transfer penalty: 3.5 EUR/transfer (Wardman, 2004)
   - Environmental cost: γ_eco × CO₂ × social cost of carbon
 
+Transport engineering context (Prof. Pronello — ITS/MaaS course):
+  - Generalised Cost (GC) is the cornerstone of transport supply models.
+    It expresses the total disutility of a trip in monetary units and
+    serves as the link cost function in network assignment models.
+  - In classical demand modelling, GC feeds into the systematic utility
+    V_j of Random Utility Theory (RUT): P(j) = exp(V_j) / Σ exp(V_k),
+    giving the Multinomial Logit (MNL) probability.  Here the RL agent
+    uses GC directly as its reward signal instead of logit probabilities.
+  - Context-dependent VOT reflects the concept of derived demand:
+    travel is not consumed for its own sake, so productive travel time
+    (studying on the train) has a lower VOT than unproductive time.
+  - The transfer penalty is non-additive — transfers cannot be simply
+    decomposed as the sum of link costs (cf. separable vs non-separable
+    cost functions and the Jacobian matrix classification of networks).
+  - Weather and peak adjustments are analogous to BPR-style congestion
+    functions: travel cost increases when demand (peak) or adverse
+    conditions (weather) exceed comfortable capacity.
+
 References:
   Wardman, M. (2004). Public Transport Values of Time. Transport Policy.
   Kahneman, D. & Tversky, A. (1979). Prospect Theory. Econometrica.
+  BPR (1964). Traffic Assignment Manual. US Bureau of Public Roads.
 """
 
 import numpy as np

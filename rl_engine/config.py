@@ -20,6 +20,25 @@ Key equations:
   Eq. 5 — Nudge selection: Nudge*(i,t) = argmax Q̂_nudge(s, nudge; θ)
   Eq. 6 — Data quality constraint C11
 
+Academic grounding (Prof. Pronello — ITS/MaaS course, Politecnico di Torino):
+  - MoveWise targets Step 3 (Mode Choice) of the 4-step transport demand
+    model (Generation → Distribution → Mode Choice → Assignment).
+  - The RL agent replaces the classical Multinomial Logit (MNL) from
+    Random Utility Theory (RUT). Unlike MNL, it avoids the IIA
+    (Independence of Irrelevant Alternatives) limitation and learns
+    personalised weights instead of fixed β-coefficients.
+  - A Nested Logit would group correlated modes (all PT in one nest)
+    to partially address IIA; our DQN hidden layers learn this structure
+    implicitly from data.
+  - The nudge-selection mechanism implements Travel Demand Management
+    (TDM) principles, pushing the system toward Wardrop's System Optimum
+    rather than individual User Equilibrium.
+  - QR tap-in/tap-out data serves as continuous digital Revealed
+    Preference (RP) data — a modern alternative to traditional survey
+    methods (CATI/CAWI/PAPI) and manual screen-line/cordon counts.
+  - MoveWise operates at MaaS Level 3–4 (Bundles + Policy integration),
+    aligned with pilot platforms such as UbiGo, Whim, and myCicero.
+
 NEXUS 2026 — Politecnico di Torino
 """
 

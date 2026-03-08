@@ -24,6 +24,24 @@ Constraints (v3 §7.4):
   C11 — Data quality: P[QR tap completed | a_t] ≥ δ_data (v3 Eq. 6)
   + Budget, weather, time constraints
 
+Transport demand modelling context (Prof. Pronello — ITS/MaaS course):
+  - In the 4-step demand model (GDMA), this environment models Step 3
+    (Mode Choice).  Classical approaches estimate mode probabilities via
+    MNL: P(j) = exp(V_j) / Σ_k exp(V_k).  Here the RL agent learns a
+    policy π(s) → a that directly maximises long-run reward, avoiding
+    the IIA limitation of MNL.
+  - The user acceptance model (HUR) combines Habit persistence, Utility
+    maximisation, and bounded Rationality (Regret minimisation) — a
+    richer behavioural model than standard RUT which assumes only
+    utility-maximising agents.
+  - The compound action space (mode × nudge) implements Travel Demand
+    Management (TDM): the platform actively steers individual choices
+    toward Wardrop's System Optimum, not just User Equilibrium.
+  - Habit decay (H_t = H₀·e^{-αt}) captures the observation that
+    habitual mode choice (status quo bias) weakens with each positive
+    experience of alternatives — a key insight from behavioural
+    economics applied to transport.
+
 Simulates Giuseppe's 8 weekly trips (3 commute + 3 errands + 2 leisure)
 over a configurable number of weeks (default: 7 weeks).
 """
