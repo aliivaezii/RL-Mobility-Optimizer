@@ -51,5 +51,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Wait for any in-progress deployment to finish
+        run: sleep 30
+
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          error_count: 15
+          reporting_interval: 10000
+          timeout: 600000
