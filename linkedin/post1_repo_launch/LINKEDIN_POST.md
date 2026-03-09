@@ -4,22 +4,23 @@
 
 ---
 
-Excited to share a project I've been working on with two great colleagues at Politecnico di Torino.
+Excited to share MoveWise, an open-source project I built with Sajjad Shahali and Kiana Salimi at Politecnico di Torino for the NEXUS 2026 Hackathon, supervised by Prof. Cristina Pronello.
 
-MoveWise is an open-source Mobility-as-a-Service (MaaS) platform that uses Reinforcement Learning to help users shift from private cars to greener transport options. We built it from scratch as part of the NEXUS 2026 Hackathon, under the supervision of Prof. Cristina Pronello.
+MoveWise is a Mobility-as-a-Service (MaaS) platform. The core idea: most people stick with their cars not because it is the best option, but because comparing alternatives is too complicated. We wanted to change that.
 
-What we built:
-• A React front-end with real-time route planning, interactive maps, and QR-based unified payments
-• A Python RL engine that learns user preferences and recommends the most sustainable routes
-• Full CI/CD pipeline with GitHub Actions, automated testing, and live deployment
+How it works under the hood:
 
-The idea is simple: make sustainable mobility the easiest choice, not the hardest. MoveWise shows users the true cost of driving (not just fuel, but insurance, depreciation, parking, time) and offers multimodal alternatives that can cut CO₂ by up to 95%.
+The back-end runs a Reinforcement Learning engine in Python. It models each user's travel behavior as a Markov Decision Process, where the agent learns which combination of transport modes (bus, train, e-scooter, bike, carpool) minimizes travel time, cost, and CO₂ for that specific user. The RL agent uses a reward function that balances three objectives: user satisfaction, monetary savings, and emission reduction. Over time, it adapts to individual habits and preferences.
 
-This project would not have been possible without Prof. Cristina Pronello, whose course on Intelligent Transportation Systems gave us the academic foundation to approach urban mobility with the right tools and mindset. Her guidance throughout the hackathon was invaluable.
+On the front-end, we built a React app with Vite, integrated with Leaflet/OpenStreetMap for real-time route visualization. Users can see multimodal journey options ranked by the RL engine, compare true costs (not just fuel, but insurance, depreciation, parking, time), and pay across all transport modes with a single QR code.
 
-A huge thanks to my teammates Sajjad Shahali and Kiana Salimi for the great teamwork and late-night coding sessions. Building this together was one of the best parts of the experience.
+The platform also includes a True Cost Calculator that reveals the full monthly cost of car ownership. Most drivers think they spend around €60/month (just fuel). The actual figure, when you include insurance, depreciation, maintenance, parking, and time value, is closer to €510/month. Showing this gap is one of the strongest nudges toward modal shift.
 
-The full source code, live demo, and interactive presentation are all available on GitHub:
+We set up a full CI/CD pipeline with GitHub Actions for automated testing and deployment. The live demo runs on GitHub Pages.
+
+The project was developed as part of Prof. Pronello's Intelligent Transportation Systems course, which provided the academic framework for approaching urban mobility challenges.
+
+Full source code, live demo, and interactive presentation:
 https://github.com/aliivaezii/RL-Mobility-Optimizer
 
 #MobilityAsAService #MaaS #ReinforcementLearning #SustainableMobility #OpenSource #React #Python #UrbanTransport #SmartCities #PolitecnicodiTorino #NEXUS2026 #AI #MachineLearning #GreenTransport
