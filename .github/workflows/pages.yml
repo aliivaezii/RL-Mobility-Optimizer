@@ -36,6 +36,10 @@ jobs:
           NODE_ENV: production
           GITHUB_PAGES_BASE: /${{ github.event.repository.name }}/
 
+      - name: Copy presentation files into build output
+        run: cp -r ../presentation dist/presentation
+        working-directory: movewise-react
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: movewise-react/dist
